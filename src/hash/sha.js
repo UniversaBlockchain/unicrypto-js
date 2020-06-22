@@ -59,7 +59,7 @@ class SHA {
   }
 
   async get(data, encoding) {
-    if (typeof data !== 'string' || this.empty) await this.update(data);
+    if ((typeof data !== 'string' && data) || this.empty) await this.update(data);
     else encoding = data;
 
     // if (data) this.update(data);

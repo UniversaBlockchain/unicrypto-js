@@ -36,6 +36,7 @@ declare module 'unicrypto' {
     get(encoding?: string): Promise<Uint8Array>;
     get(data?: Uint8Array, encoding?: string): Promise<Uint8Array>;
     put(data: Uint8Array): Promise<void>;
+    delete(): Promise<void>;
 
     static getDigest(sha: SHAStringType, data: Uint8Array): Promise<Uint8Array>;
   }

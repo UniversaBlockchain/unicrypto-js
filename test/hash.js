@@ -45,10 +45,18 @@ describe('Hash', function() {
       });
 
       it('should calculate hash for message "onetwo" divided by parts', async () => {
-        sha256.put(textToBytes('one'));
-        sha256.put(textToBytes('two'));
+        await sha256.put(textToBytes('one'));
+        await sha256.put(textToBytes('two'));
 
         expect(await sha256.get('hex')).to.equal(hashFor['onetwo']);
+      });
+
+      it.only('should calculate hash for message "onetwo" divided by parts (binary)', async () => {
+        await sha256.put(textToBytes('one'));
+        await sha256.put(textToBytes('two'));
+        const digest = await sha256.get();
+
+        expect(bytesToHex(digest)).to.equal(hashFor['onetwo']);
       });
 
       it('should calculate hash for message "one" (static)', async () => {

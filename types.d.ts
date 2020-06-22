@@ -82,6 +82,7 @@ declare module 'unicrypto' {
   export class PrivateKey {
     public publicKey: PublicKey;
 
+    delete(): void;
     pack(options?: string | PrivateKeyPackBOSS): Promise<Uint8Array>;
     sign(data: Uint8Array, options: PrivateKeySignOpts): Promise<Uint8Array>;
     signExtended(data: Uint8Array): Promise<Uint8Array>;
@@ -112,6 +113,7 @@ declare module 'unicrypto' {
     readonly longAddress58: string;
     readonly fingerprint: Uint8Array;
 
+    delete(): void;
     getBitStrength(): number;
     encryptionMaxLength(options?: PublicKeyEncryptOpts): number;
     pack(mode: string): Promise<Uint8Array>;

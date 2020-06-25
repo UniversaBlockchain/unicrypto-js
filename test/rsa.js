@@ -103,7 +103,7 @@ describe('RSA', function() {
       expect(priv.publicKey.getBitStrength()).to.be.equal(2048);
     });
 
-    it('should return encryption max length', async () => {
+    it('should return encryption max length (1024)', async () => {
       var oaepOpts = {
         seed: seedOAEP.seed,
         pssHash: 'sha1',

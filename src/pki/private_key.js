@@ -32,25 +32,33 @@ const { ONE: one } = BigInteger;
 const { wrapOptions, getMaxSalt, normalizeOptions } = helpers;
 
 module.exports = class PrivateKey extends AbstractKey {
-  constructor(key) {
+  constructor(load, unload) {
     super();
 
-    this.key = key;
-    this.publicKey = PublicKey.fromPrivate(key);
+    this.load = load;
+    this.unload = unload;
+    // this.publicKey = PublicKey.fromPrivate(load, unload);
   }
 
-  delete() {
-    this.key.delete();
+  async loadProperties(key) {
+    const self = this;
+    this.publicKey = await PublicKey.fromPrivate(key);
+
+    this.n = this.publicKey.n;
+    this.e = this.publicKey.e;
+    this.p = key.get_p();
+    this.q = key.get_q();
+    this.bitStrength = this.publicKey.bitStrength;
+    this._fingerprint = this.publicKey.fingerprint;
   }
 
-  getN() { return this.publicKey.getN(); }
-  getE() { return this.publicKey.getE(); }
-  getP() { return this.key.get_p(); }
-  getQ() { return this.key.get_q(); }
-  getBitStrength() { return this.publicKey.getBitStrength(); }
-  get fingerprint() {
-    return this.publicKey.fingerprint;
-  }
+  getN() { return this.n; }
+  getE() { return this.e; }
+  getP() { return this.p; }
+  getQ() { return this.q; }
+  getBitStrength() { return this.bitStrength; }
+  get fingerprint() { return this._fingerprint; }
+
   async sign(data, options = {}) {
     const self = this;
     const hashType = SHA.wasmType(options.pssHash || 'sha1');
@@ -58,13 +66,18 @@ module.exports = class PrivateKey extends AbstractKey {
     let saltLength = -1;
     if (typeof options.saltLength === 'number') saltLength = options.saltLength;
 
+    const key = await this.load();
+
     return new Promise(resolve => {
-      const cb = res => resolve(new Uint8Array(res));
+      const cb = res => {
+        self.unload(key);
+        resolve(new Uint8Array(res));
+      }
 
       if (options.salt)
-        self.key.signWithCustomSalt(data, hashType, mgf1Type, salt, cb);
+        key.signWithCustomSalt(data, hashType, mgf1Type, salt, cb);
       else
-        self.key.sign(data, hashType, mgf1Type, saltLength, cb);
+        key.sign(data, hashType, mgf1Type, saltLength, cb);
     });
   }
 
@@ -72,7 +85,7 @@ module.exports = class PrivateKey extends AbstractKey {
     const self = this;
     const pub = this.publicKey;
     const dataHash = new SHA('512');
-    const fingerprint = pub.fingerprint;
+    const fingerprint = this.fingerprint;
     const sha512Digest = await dataHash.get(data);
     const publicPacked = await pub.packed();
     const boss = new Boss();
@@ -98,29 +111,61 @@ module.exports = class PrivateKey extends AbstractKey {
   async decrypt(data, options = {}) {
     const self = this;
     const oaepHash = SHA.wasmType(options.oaepHash || 'sha1');
+    const key = await this.load();
 
     return new Promise(resolve => {
-      self.key.decrypt(data, oaepHash, (res) => {
+      key.decrypt(data, oaepHash, (res) => {
+        self.unload(key);
         resolve(new Uint8Array(res));
       });
     });
   }
 
   async pack(options) {
-    return this.packBOSS(options);
+    const opts = {};
+    if (typeof options === 'string') opts.password = options;
+
+    const key = await this.load();
+    const packed = await PrivateKey.packBOSS(Object.assign({ key }, opts));
+    this.unload(key);
+
+    return packed;
   }
 
-  async packBOSS(options) {
-    const self = this;
+  // async packBOSS(options) {
+  //   const self = this;
+  //   const key = options.key || await this.load();
+
+  //   return new Promise(resolve => {
+  //     const cb = (result) => {
+  //       if (self.unload) self.unload(key);
+  //       resolve(result);
+  //     };
+
+  //     if (!options)
+  //       key.pack(bin => cb(new Uint8Array(bin)));
+  //     else {
+  //       const password = options.password || options;
+  //       const rounds = options.rounds || 160000;
+
+  //       key.packWithPassword(password, rounds, (err, packed) => {
+  //         if (err === '') cb(new Uint8Array(packed));
+  //         else reject(err);
+  //       });
+  //     }
+  //   });
+  // }
+
+  static async packBOSS(options) {
+    const { key, password } = options;
 
     return new Promise(resolve => {
-      if (!options)
-        self.key.pack(bin => resolve(new Uint8Array(bin)));
+      if (!password)
+        key.pack(bin => resolve(new Uint8Array(bin)));
       else {
-        const password = options.password || options;
         const rounds = options.rounds || 160000;
 
-        self.key.packWithPassword(password, rounds, (err, packed) => {
+        key.packWithPassword(password, rounds, (err, packed) => {
           if (err === '') resolve(new Uint8Array(packed));
           else reject(err);
         });
@@ -129,15 +174,28 @@ module.exports = class PrivateKey extends AbstractKey {
   }
 
   static async unpack(options) {
-    if (options.q && options.p)
-      return new PrivateKey(await this.unpackExponents(options));
+    let key = options.key;
 
-    return new PrivateKey(await this.unpackBOSS(options));
+    if (!key) {
+      if (options.q && options.p)
+        key = await PrivateKey.unpackExponents(options);
+      else
+        key = await PrivateKey.unpackBOSS(options);
+    }
+
+    const raw = await PrivateKey.packBOSS({ key });
+    const load = () => PrivateKey.unpackBOSS(raw);
+    const unload = (key) => key.delete();
+
+    const instance = new PrivateKey(load, unload);
+    await instance.loadProperties(key);
+
+    unload(key);
+
+    return instance;
   }
 
   static async unpackBOSS(options) {
-    const self = this;
-
     await Module.isReady;
 
     return new Promise(resolve => {
@@ -156,7 +214,7 @@ module.exports = class PrivateKey extends AbstractKey {
     const boss = new Boss();
     const { e, p, q } = options;
 
-    return this.unpackBOSS(boss.dump([
+    return PrivateKey.unpackBOSS(boss.dump([
       AbstractKey.TYPE_PRIVATE,
       bigIntToByteArray(new BigInteger(e, 16)),
       bigIntToByteArray(new BigInteger(p, 16)),
@@ -169,11 +227,13 @@ module.exports = class PrivateKey extends AbstractKey {
 
     await Module.isReady;
 
-    return new Promise(resolve => {
-      Module.PrivateKeyImpl.generate(strength, key =>
-        resolve(new PrivateKey(key))
-      );
+    const generator = new Promise(resolve => {
+      Module.PrivateKeyImpl.generate(strength, resolve);
     });
+
+    const key = await generator;
+
+    return PrivateKey.unpack({ key });
   }
 }
 
@@ -199,24 +259,3 @@ function fromBOSS(dump) {
   return new Module.PrivateKeyImpl(dump);
 }
 
-/**
- * Restores private key exponents from e, p, q
- *
- * @param {Object} exps - dict of exponents passed to private key.
- *                             Exponents must be in BigInteger format
- */
-function fromExponents(exps) {
-  const { e, p, q } = exps;
-
-  const n = exps.n || p.multiply(q);
-  const d = exps.d || e.modInverse(p.subtract(one).multiply(q.subtract(one)));
-  const dP = exps.dP || d.mod(p.subtract(one));
-  const dQ = exps.dQ || d.mod(q.subtract(one));
-  const qInv = exps.qInv || q.modInverse(p);
-
-  return rsa.setPrivateKey(n, e, d, p, q, dP, dQ, qInv);
-}
-
-function toExponents(instance) {
-  return instance.params;
-}

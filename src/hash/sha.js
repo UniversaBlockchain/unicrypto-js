@@ -16,8 +16,8 @@ class SHA {
     const wasmTpe = SHA.wasmType(hashType);
     const tpe = typeof wasmTpe === 'number' ? wasmTpe : hashType;
     this.wasmType = tpe;
-    this.hash = SHA.init(this.wasmType);
     this.empty = true;
+    this.hash = null;
   }
 
   getSync() {
@@ -25,46 +25,56 @@ class SHA {
   }
 
   async delete() {
-    (await this.hash).delete();
+    this.hash.delete();
   }
 
   async update(data) {
+    await this.init();
     this.empty = false;
-    (await this.hash).update(data);
+    return this.hash.update(data);
   }
 
   async put(data) {
-    this.update(data);
+    return this.update(data);
   }
 
   async doFinal() {
-    (await this.hash).doFinal();
+    await this.init();
+    this.hash.doFinal();
   }
 
   getDigestSize() {
-    return (this.getSync()).getDigestSize();
+    const instance = this.getSync();
+    const size = instance.getDigestSize();
+    instance.delete();
+
+    return size;
   }
 
   async getDigest(encoding) {
-    const hash = await this.hash;
+    await this.init();
+    const hash = this.hash;
 
-    return new Promise((resolve, reject) => {
+    const digest = await new Promise((resolve, reject) => {
       hash.getDigest(res => {
         const bytes = new Uint8Array(res);
-
         if (encoding === 'hex') resolve(bytesToHex(bytes));
         else resolve(bytes);
       });
     });
+
+    await this.delete();
+
+    return digest;
   }
 
   async get(data, encoding) {
-    if ((typeof data !== 'string' && data) || this.empty) await this.update(data);
+    if ((typeof data !== 'string' && data) || this.empty)
+      await this.update(data);
     else encoding = data;
 
-    // if (data) this.update(data);
-
     await this.doFinal();
+
     return this.getDigest(encoding);
   }
 
@@ -82,16 +92,17 @@ class SHA {
     const lower = stringType.toLowerCase();
     let tpe = SHA.StringTypes[lower];
     if (typeof tpe !== 'number') tpe = SHA.StringTypes[`sha${lower}`];
-
     if (typeof tpe !== 'number') return false;
 
     return tpe;
   }
 
-  static async init(wasmType) {
+  async init(wasmType) {
+    if (this.hash) return;
+
     await Module.isReady;
 
-    return new Module.DigestImpl(wasmType);
+    if (!this.hash) this.hash = await new Module.DigestImpl(this.wasmType);
   }
 
   static async getDigest(hashType, data) {

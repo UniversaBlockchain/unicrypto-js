@@ -173,14 +173,14 @@ module.exports = class PrivateKey extends AbstractKey {
     });
   }
 
-  static async unpack(options) {
+  static async unpack(options, password) {
     let key = options.key;
 
     if (!key) {
       if (options.q && options.p)
         key = await PrivateKey.unpackExponents(options);
       else
-        key = await PrivateKey.unpackBOSS(options);
+        key = await PrivateKey.unpackBOSS(options, password);
     }
 
     const raw = await PrivateKey.packBOSS({ key });
@@ -195,7 +195,7 @@ module.exports = class PrivateKey extends AbstractKey {
     return instance;
   }
 
-  static async unpackBOSS(options) {
+  static async unpackBOSS(options, password) {
     await Module.isReady;
 
     return new Promise(resolve => {

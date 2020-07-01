@@ -97,6 +97,17 @@ describe('Hash', function() {
 
         expect(digest).to.equal("ec01498288516fc926459f58e2c6ad8df9b473cb0fc08c2596da7cf0e49be4b298d88cea927ac7f539f1edf228376d25");
       });
+
+      it("should not leak", async () => {
+        for (let i = 0; i < 20000; i++) {
+          const sha = new SHA("sha3_384");
+          await sha.put(decode64("abc"));
+          await sha.put(decode64("bcd"));
+          const res = await sha.get("bin");
+        }
+
+        expect(1).to.equal(1);
+      });
     });
   });
 

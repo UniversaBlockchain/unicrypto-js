@@ -89,6 +89,7 @@ declare module 'unicrypto' {
     decrypt(data: Uint8Array, options?: PublicKeyEncryptOpts): Promise<Uint8Array>;
 
     static unpack(packed: Uint8Array, password?: string): Promise<PrivateKey>;
+    static unpack(options: PrivateKeyUnpackBOSS): Promise<PrivateKey>;
     static generate(options: CreateKeysOpts): Promise<PrivateKey>;
   }
 
@@ -116,7 +117,7 @@ declare module 'unicrypto' {
     delete(): void;
     getBitStrength(): number;
     encryptionMaxLength(options?: PublicKeyEncryptOpts): number;
-    pack(mode: string): Promise<Uint8Array>;
+    pack(mode?: string): Promise<Uint8Array>;
     verify(
       message: Uint8Array,
       signature: Uint8Array,
@@ -166,14 +167,6 @@ declare module 'unicrypto' {
 
     static packWithKey(key: PrivateKey, payload: any, nonce?: Uint8Array): Promise<Uint8Array>;
     static unpack(packed: Uint8Array): Promise<SignedRecord>;
-  }
-
-  export class Capsule {
-    constructor();
-
-    static sign(capsuleBinary: Uint8Array, key: PrivateKey): Uint8Array;
-    static getSignatures(capsuleBinary: Uint8Array): Uint8Array[];
-    static getSignatureKeys(capsuleBinary: Uint8Array): PublicKey[];
   }
 
   export interface KeyInfoOpts {

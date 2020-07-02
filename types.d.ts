@@ -132,33 +132,61 @@ declare module 'unicrypto' {
     static readonly DEFAULT_MGF1_HASH: SHA;
   }
 
-  export class Boss {
-    constructor();
+  export interface BossDeserializable<T> {
+    deserializeFromBOSS(params: any): T
+  };
 
-    dump(data: any): Uint8Array;
-    load(packed: Uint8Array): any;
-  }
+  export interface BossSerializable {
+    serializeToBoss(): any
+  };
+
+  // export namespace Boss {
+    // export class writer {
+    //   constructor();
+
+    //   write(data: any): void;
+    //   get(): Uint8Array;
+    // }
+
+    // export class reader {
+    //   constructor(data: Uint8Array);
+
+    //   read(): any;
+    // }
+
+  //   // register<T extends BossSerializable>(alias: string, clz: BossDeserializable<T>): void;
+  //   // registerSerializer<T>(alias: string, clz: BossDeserializable<T>, serializer: (any) => T): void;
+
+  //   // dump(data: any): Uint8Array;
+  //   // load(packed: Uint8Array): any;
+  // }
 
   export namespace Boss {
-    export class writer {
+    export function dump(data: any): Uint8Array;
+    export function load(packed: Uint8Array): any;
+
+    export class Writer {
       constructor();
 
       write(data: any): void;
       get(): Uint8Array;
     }
 
-    export class reader {
+    export class Reader {
       constructor(data: Uint8Array);
 
       read(): any;
     }
+
+    export function register<T extends BossSerializable>(alias: string, clz: BossDeserializable<T>): void;
+    export function registerSerializer<T>(alias: string, clz: BossDeserializable<T>, serializer: (any) => T): void;
   }
 
   export class SignedRecord {
     constructor(recordType: number, key: PrivateKey, payload: any, nonce?: Uint8Array);
 
     public recordType: number;
-    public key: PrivateKey;
+    public key: PublicKey;
     public payload: any;
     public nonce: Uint8Array | null;
 

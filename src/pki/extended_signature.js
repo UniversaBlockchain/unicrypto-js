@@ -14,19 +14,17 @@ exports.verify = async (publicKey, signature, data) =>
 	publicKey.verifyExtended(signature, data);
 
 function extractKeyId(signature) {
-	const boss = new Boss();
-	const unpacked = boss.unpack(signature);
+	const unpacked = Boss.unpack(signature);
 	const { exts } = unpacked;
-	const targetSignature = boss.unpack(exts);
+	const targetSignature = Boss.unpack(exts);
 
 	return targetSignature.key;
 }
 
 async function extractPublicKey(signature) {
-  const boss = new Boss();
-  const unpacked = boss.unpack(signature);
+  const unpacked = Boss.unpack(signature);
   const { exts } = unpacked;
-  const targetSignature = boss.unpack(exts);
+  const targetSignature = Boss.unpack(exts);
 
   return PublicKey.unpack(targetSignature.pub_key);
 }

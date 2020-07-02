@@ -2,7 +2,7 @@ var Module = Module || require('../vendor/wasm/wrapper');
 
 const helpers = require('./helpers');
 const utils = require('../utils');
-const Boss = require('../boss/protocol');
+const Boss = require('../Boss/protocol');
 const SHA = require('../hash/sha');
 const { Buffer } = require('buffer');
 const AbstractKey = require('./abstract_key');
@@ -71,9 +71,8 @@ module.exports = class PublicKey extends AbstractKey {
   }
 
   async verifyExtended(signature, data) {
-    const boss = new Boss();
     const dataHash = new SHA('512');
-    const unpacked = boss.load(signature);
+    const unpacked = Boss.load(signature);
     const { exts, sign } = unpacked;
     const verified = await this.verify(exts, sign, {
       pssHash: 'sha512'
@@ -81,7 +80,7 @@ module.exports = class PublicKey extends AbstractKey {
 
     if (!verified) return null;
 
-    const targetSignature = boss.load(exts);
+    const targetSignature = Boss.load(exts);
     const { sha512, key, created_at } = targetSignature;
 
     if (encode64(await dataHash.get(data)) === encode64(sha512))
@@ -282,10 +281,9 @@ function toForge(key) {
 }
 
 function toBOSS(key) {
-  const boss = new Boss();
   const { n, e } = key;
 
-  return boss.dump([
+  return Boss.dump([
     1,
     bigIntToByteArray(e),
     bigIntToByteArray(n)
@@ -293,8 +291,7 @@ function toBOSS(key) {
 }
 
 function fromBOSS(dump) {
-  const boss = new Boss();
-  const parts = boss.load(dump);
+  const parts = Boss.load(dump);
 
   if (parts[0] !== 1) throw new Error('Failed to read key');
 

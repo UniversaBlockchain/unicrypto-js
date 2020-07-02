@@ -34,6 +34,11 @@ class SignedRecord {
   // static RECORD_WITH_ADDRESS = 1;
   static get RECORD_WITH_KEY() { return 0; }
   static get RECORD_WITH_ADDRESS() { return 1; }
+  static get RECORD_3_384() { return 0; }
+  static get RECORD_3_256() { return 1; }
+  static get RECORD_3_512() { return 2; }
+  static get RECORD_2_256() { return 3; }
+  static get RECORD_2_512() { return 4; }
 
   /**
    * Simple signed array pack woth the following structure:

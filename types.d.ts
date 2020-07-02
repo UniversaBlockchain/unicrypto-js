@@ -158,7 +158,7 @@ declare module 'unicrypto' {
     constructor(recordType: number, key: PrivateKey, payload: any, nonce?: Uint8Array);
 
     public recordType: number;
-    public key: PrivateKey;
+    public key: PublicKey;
     public payload: any;
     public nonce: Uint8Array | null;
 

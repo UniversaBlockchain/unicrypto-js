@@ -549,8 +549,6 @@ Encode/decode
 ```js
 import { Boss } from 'unicrypto';
 
-const boss = new Boss();
-
 const data = {
   a: decode64("abc")
   b: new Date(),
@@ -558,8 +556,8 @@ const data = {
   d: { a: 1 }
 };
 
-const encoded = boss.dump(data); // Uint8Array
-const decoded = boss.load(encoded); // original data
+const encoded = Boss.dump(data); // Uint8Array
+const decoded = Boss.load(encoded); // original data
 ```
 
 Encode stream

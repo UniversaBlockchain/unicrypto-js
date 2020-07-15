@@ -149,27 +149,6 @@ declare module 'unicrypto' {
     serializeToBOSS(): any
   };
 
-  // export namespace Boss {
-    // export class writer {
-    //   constructor();
-
-    //   write(data: any): void;
-    //   get(): Uint8Array;
-    // }
-
-    // export class reader {
-    //   constructor(data: Uint8Array);
-
-    //   read(): any;
-    // }
-
-  //   // register<T extends BossSerializable>(alias: string, clz: BossDeserializable<T>): void;
-  //   // registerSerializer<T>(alias: string, clz: BossDeserializable<T>, serializer: (any) => T): void;
-
-  //   // dump(data: any): Uint8Array;
-  //   // load(packed: Uint8Array): any;
-  // }
-
   export namespace Boss {
     export function dump(data: any): Uint8Array;
     export function load(packed: Uint8Array): any;

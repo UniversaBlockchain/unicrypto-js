@@ -141,11 +141,12 @@ declare module 'unicrypto' {
   }
 
   export interface BossDeserializable<T> {
-    deserializeFromBOSS(params: any): T
+    deserializeFromBOSS(params: any): T,
+    className: string
   };
 
   export interface BossSerializable {
-    serializeToBoss(): any
+    serializeToBOSS(): any
   };
 
   // export namespace Boss {

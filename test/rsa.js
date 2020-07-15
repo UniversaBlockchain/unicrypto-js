@@ -208,7 +208,7 @@ describe('RSA', function() {
       const pub = priv.publicKey;
       const shortAddress = pub.shortAddress;
 
-      expect(encode58(shortAddress)).to.equal("26RzRJDLqze3P5Z1AzpnucF75RLi1oa6jqBaDh8MJ3XmTaUoF8R")
+      expect(shortAddress.base58).to.equal("26RzRJDLqze3P5Z1AzpnucF75RLi1oa6jqBaDh8MJ3XmTaUoF8R")
     });
 
     describe('signature with custom salt', function() {

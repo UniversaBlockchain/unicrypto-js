@@ -270,9 +270,13 @@ publicKey.getBitStrength(); // number
 Public key address
 
 ```js
-publicKey.shortAddress;   // short address (Uint8Array)
+publicKey.shortAddress.bytes;   // short address (Uint8Array)
+publicKey.shortAddress.base58;   // short address (Uint8Array)
+publicKey.longAddress.bytes;    // long address (Uint8Array)
+publicKey.longAddress.base58;    // long address (Uint8Array)
+
+// DEPRECATED
 publicKey.shortAddress58; // short address (base58)
-publicKey.longAddress;    // long address (Uint8Array)
 publicKey.longAddress58;  // long address (base58)
 ```
 

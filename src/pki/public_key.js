@@ -6,6 +6,7 @@ const Boss = require('../Boss/protocol');
 const SHA = require('../hash/sha');
 const { Buffer } = require('buffer');
 const AbstractKey = require('./abstract_key');
+const KeyAddress = require('./key_address');
 
 const FINGERPRINT_SHA512 = '07';
 
@@ -108,31 +109,15 @@ module.exports = class PublicKey extends AbstractKey {
   }
 
   get fingerprint() {
-    // if (this._fingerprint) return this._fingerprint;
-
-    // const self = this;
-    // this.key.fingerprint(fp => self._fingerprint = new Uint8Array(fp));
-
     return this._fingerprint;
   }
 
   async packed() {
-    // const self = this;
-
-    // if (this._packed) return this._packed;
-
-    // this._packed = await this.pack();
-
     return this._packed;
   }
 
   async pack() {
     return this._packed;
-    // const self = this;
-
-    // return new Promise(resolve => {
-    //   self.key.pack(packed => resolve(new Uint8Array(packed)));
-    // });
   }
 
   static async packBOSS(key) {
@@ -153,15 +138,6 @@ module.exports = class PublicKey extends AbstractKey {
   getN() { return this.n; }
   getE() { return this.e; }
   getBitStrength() { return this.bitStrength; }
-  // get shortAddress58() { return this.key.getShortAddress58(); }
-  // get shortAddress() {
-  //   return new Uint8Array(mapCall(this.key.getShortAddressBin, this.key));
-  // }
-
-  // get longAddress58() { return this.key.getLongAddress58(); }
-  // get longAddress() {
-  //   return new Uint8Array(mapCall(this.key.getLongAddressBin, this.key));
-  // }
 
   async loadProperties(key, packed) {
     const self = this;
@@ -172,8 +148,8 @@ module.exports = class PublicKey extends AbstractKey {
     key.fingerprint(fp => self._fingerprint = new Uint8Array(fp));
 
     if (this.bitStrength > 1024) {
-      this.longAddress = new Uint8Array(mapCall(key.getLongAddressBin, key));
-      this.shortAddress = new Uint8Array(mapCall(key.getShortAddressBin, key));
+      this.longAddress = new KeyAddress(new Uint8Array(mapCall(key.getLongAddressBin, key)));
+      this.shortAddress = new KeyAddress(new Uint8Array(mapCall(key.getShortAddressBin, key)));
       this.shortAddress58 = key.getShortAddress58();
       this.longAddress58 = key.getLongAddress58();
     }
@@ -252,32 +228,6 @@ module.exports = class PublicKey extends AbstractKey {
 
     return isValid;
   }
-}
-
-/**
- * Converts PEM-formatted key protected via password to an instance
- *
- * @param {String} options.pem - pem formatted key
- */
-function fromPEM(options) {
-  // TODO: may be needed in future
-}
-
-/**
- * Converts an RSA public key to PEM format.
- *
- * @return the PEM-foramatted public key.
- */
-function toPEM(key) {
-  return pki.publicKeyToPem(key);
-};
-
-function fromForge(key) {
-  return key;
-}
-
-function toForge(key) {
-  return key;
 }
 
 function toBOSS(key) {

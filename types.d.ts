@@ -30,6 +30,14 @@ declare module 'unicrypto' {
     constructor(value: any, encoding: any);
   }
 
+  export class KeyAddress {
+    constructor(bytes: Uint8Array);
+
+    readonly base58: string;
+
+    isLong(): boolean;
+  }
+
   export class SHA {
     constructor(size: string | number);
 

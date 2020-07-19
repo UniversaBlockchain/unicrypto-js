@@ -12,6 +12,7 @@ declare module 'unicrypto' {
   export function hashId(data: Uint8Array): Promise<Uint8Array>;
   export function randomBytes(size: number): Uint8Array;
   export function crc32(data: Uint8Array): Uint8Array;
+  export function shortId(): string;
 
   export interface CreateKeysOpts {
     strength?: number
@@ -116,11 +117,12 @@ declare module 'unicrypto' {
   }
 
   export class PublicKey {
-    readonly shortAddress: Uint8Array;
-    readonly longAddress: Uint8Array;
+    readonly shortAddress: KeyAddress;
+    readonly longAddress: KeyAddress;
     readonly shortAddress58: string;
     readonly longAddress58: string;
     readonly fingerprint: Uint8Array;
+    readonly packed: Uint8Array;
 
     delete(): void;
     getBitStrength(): number;

@@ -313,7 +313,7 @@ const keyPacked = await key.pack(); // Uint8Array
 const keyPackedProtected = await key.pack("somepassword"); // Uint8Array
 const keyPackedProtected1000 = await key.pack({ password: "qwerty", rounds: 1000 });
 
-const bossEncodedPublic = await key.publicKey.packed();
+const bossEncodedPublic = key.publicKey.packed;
 ```
 
 Get type of key package. There are 4 types of what key binary package may contain.

@@ -112,7 +112,7 @@ module.exports = class PublicKey extends AbstractKey {
     return this._fingerprint;
   }
 
-  async packed() {
+  get packed() {
     return this._packed;
   }
 

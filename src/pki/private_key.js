@@ -87,7 +87,7 @@ module.exports = class PrivateKey extends AbstractKey {
     const dataHash = new SHA('512');
     const fingerprint = this.fingerprint;
     const sha512Digest = await dataHash.get(data);
-    const publicPacked = await pub.packed();
+    const publicPacked = pub.packed;
 
     const targetSignature = Boss.dump({
       'key': fingerprint,

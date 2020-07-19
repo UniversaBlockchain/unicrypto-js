@@ -1,8 +1,9 @@
 const utils = require('../utils');
+const Boss = require('../boss/protocol');
 
 const { encode58 } = utils;
 
-module.exports = class KeyAddress {
+class KeyAddress {
   constructor(bytes) {
     this.bytes = bytes;
   }
@@ -10,4 +11,18 @@ module.exports = class KeyAddress {
   get base58() { return encode58(this.bytes); }
 
   isLong() { return this.bytes.length === 53; }
+
+  static deserializeFromBOSS(serialized) {
+    return new KeyAddress(serialized.uaddress);
+  }
+
+  serializeToBOSS() { return { uaddress: this.bytes }; }
 }
+
+KeyAddress.className = "KeyAddress";
+
+Boss.register("KeyAddress", KeyAddress);
+
+module.exports = KeyAddress;
+
+

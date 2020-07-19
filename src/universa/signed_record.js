@@ -54,7 +54,7 @@ class SignedRecord {
    * @return
    */
   static async packWithKey(key, payload, nonce = null) {
-    const pub = await key.publicKey.packed();
+    const pub = key.publicKey.packed;
     const data = Boss.dump([nonce, payload]);
     const signature = await key.sign(data, defaultPSSConfig());
 

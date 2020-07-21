@@ -585,6 +585,46 @@ const arg4 = reader.read(); // 3
 const arg5 = reader.read(); // undefined
 ```
 
+#### Typesript class registration
+You can pack and load instance of your class by implementing BossSerializable and BossDeserializable interfaces:
+
+```js
+import { BossSerializable, Boss } from 'unicrypto';
+
+interface MyClassSerialized {
+  someValue: string;
+}
+
+class MyClass implements BossSerializable {
+  someValue: string;
+
+  constructor(someValue: string) { this.someValue = someValue; }
+
+  serializeToBOSS() {
+    return { someValue };
+  }
+
+  // You need to implement method according to BossDeserializable interface
+  static deserializeFromBOSS(serialized: MyClassSerialized) {
+    return new MyClass(serialized.someValue);
+  }
+}
+
+Boss.register("MyClassType", MyClass);
+```
+
+And you can pack/load instances like this:
+
+```js
+import { Boss } from 'unicrypto';
+
+const myInstance: MyClass;
+
+const packed = Boss.dump(myInstance); // Uint8Array
+const loaded = Boss.load(packed) as MyClass;
+```
+
+
 ### AES
 
 Encrypt/decrypt

@@ -38,8 +38,8 @@ const {
 } = types;
 
 module.exports = class Parser {
-  constructor(protocol, source) {
-    this.protocol = protocol;
+  constructor(registry, source) {
+    this.registry = registry;
     this.buffer = new StringIO(bytesToByteString(source));
 
     // Aliases
@@ -110,6 +110,7 @@ module.exports = class Parser {
         return list;
       case DICT:
         const dictionary = {};
+        let instance;
         this.cacheObject({});
         const dictIndex = this.cache.length - 1;
 
@@ -120,9 +121,12 @@ module.exports = class Parser {
           dictionary[key] = value;
         }
 
-        this.cache[dictIndex] = dictionary;
+        instance = this.registry.deserialize(dictionary);
+        if (!instance) instance = dictionary;
 
-        return dictionary;
+        this.cache[dictIndex] = instance;
+
+        return instance;
       case CREF:
         return this.cache[value];
       default:

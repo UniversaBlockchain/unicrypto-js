@@ -9,3 +9,4 @@ exports.PrivateKey = require('./private_key');
 exports.AbstractKey = require('./abstract_key');
 exports.ExtendedSignature = require('./extended_signature');
 exports.defaultPSSConfig = rsa.defaultPSSConfig;
+exports.KeyAddress = require('./key_address');

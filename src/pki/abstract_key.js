@@ -2,8 +2,7 @@ const Boss = require('../boss/protocol');
 
 class AbstractKey {
   static typeOf(bin) {
-    const boss = new Boss();
-    const parts = boss.load(bin);
+    const parts = Boss.load(bin);
     const tpe = parts[0];
 
     if (tpe === AbstractKey.TYPE_PRIVATE) return AbstractKey.TYPE_PRIVATE;

@@ -36,8 +36,8 @@ const {
 } = types; // Headers
 
 module.exports = class Formatter {
-  constructor(protocol) {
-    this.protocol = protocol;
+  constructor(registry) {
+    this.registry = registry;
     this.cache = {};
     this.cache[0] = null;
 
@@ -135,6 +135,10 @@ module.exports = class Formatter {
     function classifyByConstructorName() {
       const constructorName = value.constructor.name;
 
+      const serializedInstance = self.registry.serialize(constructorName, value);
+
+      if (serializedInstance) return writeObject(serializedInstance);
+
       switch (constructorName) {
         case 'Number': return writeNumber(value);
         case 'String': return writeString(value);
@@ -158,9 +162,8 @@ module.exports = class Formatter {
       if (value instanceof Array) return writeArray(value);
       if (value instanceof Object) return writeObject(value);
 
-      const errMsg = "unknown type " + (constructorName || "without constructor name");
-
-      throw new Error("Boss dump error: " + errMsg);
+      const errName = constructorName || "without constructor name";
+      throw new Error(`Failed to serialize BOSS: unknown class ${errName}`);
     }
 
     if (value.constructor) return classifyByConstructorName();

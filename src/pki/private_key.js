@@ -1,6 +1,6 @@
 var Module = Module || require('../vendor/wasm/wrapper');
 
-const Boss = require('../boss/protocol');
+const Boss = require('../Boss/protocol');
 const utils = require('../utils');
 const helpers = require('./helpers');
 const PublicKey = require('./public_key');
@@ -87,9 +87,9 @@ module.exports = class PrivateKey extends AbstractKey {
     const dataHash = new SHA('512');
     const fingerprint = this.fingerprint;
     const sha512Digest = await dataHash.get(data);
-    const publicPacked = await pub.packed();
-    const boss = new Boss();
-    const targetSignature = boss.dump({
+    const publicPacked = pub.packed;
+
+    const targetSignature = Boss.dump({
       'key': fingerprint,
       'sha512': sha512Digest,
       'created_at': new Date(),
@@ -102,7 +102,7 @@ module.exports = class PrivateKey extends AbstractKey {
       mgf1Hash: 'sha1'
     });
 
-    return boss.dump({
+    return Boss.dump({
       'exts': targetSignature,
       'sign': signature
     });
@@ -211,10 +211,9 @@ module.exports = class PrivateKey extends AbstractKey {
   }
 
   static async unpackExponents(options) {
-    const boss = new Boss();
     const { e, p, q } = options;
 
-    return PrivateKey.unpackBOSS(boss.dump([
+    return PrivateKey.unpackBOSS(Boss.dump([
       AbstractKey.TYPE_PRIVATE,
       bigIntToByteArray(new BigInteger(e, 16)),
       bigIntToByteArray(new BigInteger(p, 16)),
@@ -242,10 +241,9 @@ function toBOSS(instance, options) {
 
   const { key } = instance;
 
-  const boss = new Boss();
   const { e, p, q } = key;
 
-  return boss.dump([
+  return Boss.dump([
     AbstractKey.TYPE_PRIVATE,
     bigIntToByteArray(e),
     bigIntToByteArray(p),

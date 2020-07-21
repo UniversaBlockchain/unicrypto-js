@@ -2,11 +2,27 @@ var Minicrypto = Minicrypto || require('../index');
 var chai = chai || require('chai');
 var expect = chai.expect;
 
+class TestClass {
+  constructor(a, b, c) {
+    this.data = [a, b, c];
+  }
+
+  static deserializeFromBOSS(serialized) {
+    return new TestClass(serialized.a, serialized.b, serialized.c);
+  }
+
+  serializeToBOSS() {
+    return {
+      a: this.data[0],
+      b: this.data[1],
+      c: this.data[2]
+    };
+  }
+}
+
+TestClass.className = "TestClass";
+
 describe('BOSS Protocol', function() {
-  var boss;
-
-  const { Boss } = Minicrypto;
-
   const vectors = [
     ['8', 7],
     ['\xb8F', 70],
@@ -20,67 +36,65 @@ describe('BOSS Protocol', function() {
     bytesToHex: hex,
     arrayToByteString,
     byteStringToArray,
+    Boss,
+    encode64,
     decode64
   } = Minicrypto;
 
-  beforeEach(function() {
-    boss = new Boss();
-  });
-
   it('should ignore functions', function() {
     const hash = { a: 1, b: 2, c: function() {} };
-    const decoded = boss.load(boss.dump(hash));
+    const decoded = Boss.load(Boss.dump(hash));
 
     expect("undefined").to.equal(typeof decoded.c);
   });
 
   it('should pack doubles', function() {
     const double = 3.75;
-    const encoded = boss.dump(double);
+    const encoded = Boss.dump(double);
 
-    expect(boss.load(encoded)).to.equal(3.75);
+    expect(Boss.load(encoded)).to.equal(3.75);
   });
 
   it('should cache equal byte arrays', function() {
     const d = decode64("f7YrNmKlscCxpIwNw7jIIKrDtN1fkhsdsc7RDsZEb20");
     const hash = { a: 1, b: d, c: d };
-    const decoded = boss.load(boss.dump(hash));
+    const decoded = Boss.load(Boss.dump(hash));
 
     expect("object").to.equal(typeof decoded.c);
   });
 
   it('should pack date', function() {
     const d = new Date('2218 07 Mar 21:39');
-    const encoded = boss.dump(d);
+    const encoded = Boss.dump(d);
 
     expect(hex(encoded)).to.equal("79446b3e169d");
   });
 
   it('should read date', function() {
     const encoded = hexToBytes('79446b3e169d');
-    const decoded = boss.load(encoded);
+    const decoded = Boss.load(encoded);
 
     expect(decoded.getTime()).to.equal(7831795140000);
   });
 
   it('should encode false', function() {
-    expect(boss.load(boss.dump({ a: false }))).to.deep.equal({ a: false });
+    expect(Boss.load(Boss.dump({ a: false }))).to.deep.equal({ a: false });
   });
 
   it('should encode null', function() {
-    expect(boss.load(boss.dump({ a: null }))).to.deep.equal({ a: null });
+    expect(Boss.load(Boss.dump({ a: null }))).to.deep.equal({ a: null });
   });
 
   it('should encode utf8 strings', function() {
-    // console.log(boss.dump('АБВГД'));
+    // console.log(Boss.dump('АБВГД'));
 
-    expect(boss.load(boss.dump('АБВГД'))).to.equal('АБВГД');
+    expect(Boss.load(Boss.dump('АБВГД'))).to.equal('АБВГД');
   });
 
   it('should cache similar objects', function() {
     const txt = { __type: 'text', value: "" };
     const obj = { binary: hexToBytes('aa'), text: txt };
-    const unpacked = boss.load(boss.dump(obj));
+    const unpacked = Boss.load(Boss.dump(obj));
 
     expect(obj.text).to.deep.equal(unpacked.text);
   });
@@ -88,13 +102,13 @@ describe('BOSS Protocol', function() {
   // FIXME: need to deprecate byte strings
   it.skip('should perform compatible encode', function() {
     for (const [a, b] of vectors)
-      expect(arrayToByteString(boss.dump(b))).to.equal(a);
+      expect(arrayToByteString(Boss.dump(b))).to.equal(a);
   });
 
   // FIXME: need to deprecate byte strings
   it.skip('should perform compatible decode', function() {
     for (const [a, b] of vectors)
-      expect(hex(boss.load(byteStringToArray(a)))).to.equal(hex(b));
+      expect(hex(Boss.load(byteStringToArray(a)))).to.equal(hex(b));
   });
 
   it('should properly encode positive and negative floats', function() {
@@ -111,7 +125,7 @@ describe('BOSS Protocol', function() {
     const seconds = 1507766400;
     const d = new Date(seconds * 1000);
 
-    expect(boss.load(boss.dump(d)).getTime()).to.equal(d.getTime());
+    expect(Boss.load(Boss.dump(d)).getTime()).to.equal(d.getTime());
   });
 
   it('should encode booleans', function() {
@@ -131,12 +145,12 @@ describe('BOSS Protocol', function() {
 
     // Time is rounded to seconds on serialization, so we need
     // take care of the comparison
-    expect(boss.load(boss.dump(now)).getTime()).to
+    expect(Boss.load(Boss.dump(now)).getTime()).to
       .equal(parseInt(now.getTime() / 1000) * 1000);
   });
 
   it('should encode in stream mode', function() {
-    const writer = new Boss.writer();
+    const writer = new Boss.Writer();
 
     writer.write(0);
     writer.write(1);
@@ -149,7 +163,7 @@ describe('BOSS Protocol', function() {
   });
 
   it('should decode in stream mode', function() {
-    const reader = new Boss.reader(hexToBytes('00081018'));
+    const reader = new Boss.Reader(hexToBytes('00081018'));
 
     const arg1 = reader.read();
     const arg2 = reader.read();
@@ -169,7 +183,7 @@ describe('BOSS Protocol', function() {
     const ca = { 1: 55 };
     const data = [a, a, ca, ca, 'oops', 'oops'];
 
-    const t = boss.load(boss.dump(data));
+    const t = Boss.load(Boss.dump(data));
     const [b, c, d, e, f, g] = t;
 
     expect(a).to.deep.equal(b);
@@ -200,7 +214,7 @@ describe('BOSS Protocol', function() {
       dictionary
     ];
 
-    const result = boss.loadAll(boss.dump(...data));
+    const result = Boss.loadAll(Boss.dump(...data));
 
     expect(data).to.deep.equal(result);
     expect(result[0]).to.deep.equal(result[2]);
@@ -225,10 +239,38 @@ describe('BOSS Protocol', function() {
   it('has shortcuts', function() {
     const source = ['foo', 'bar', { 'hello': 'world' }];
 
-    expect(boss.unpack(boss.pack(source))).to.deep.equal(source);
+    expect(Boss.unpack(Boss.pack(source))).to.deep.equal(source);
+  });
+
+  it('should register and dump custom classes', function() {
+    Boss.register("MyTestClass", TestClass);
+
+    const instance = new TestClass("1", 2, { "3": 3 });
+    const dump = Boss.dump(instance);
+
+    expect(encode64(dump)).to.equal("JwthCzELYhALYw8LMxgbX190W015VGVzdENsYXNz");
+  });
+
+  it('should read custom classes', function() {
+    Boss.register("MyTestClass", TestClass);
+
+    const instance = Boss.load(decode64("JwthCzELYhALYw8LMxgbX190W015VGVzdENsYXNz"));
+
+    expect(instance).to.be.instanceof(TestClass);
+    expect(instance.data[0]).to.be.equal("1");
+    const c = instance.data[2];
+    const cKeys = Object.keys(c);
+    expect(cKeys[0]).to.be.equal("3");
+  });
+
+  it('should read unknown classes as objects', function() {
+    const obj = Boss.load(decode64("JwthCzELYhALYw8LMxgbX190Y015VGVzdENsYXNzMg=="));
+
+    expect(obj['__t']).to.equal("MyTestClass2");
+    expect(obj["a"]).to.equal("1");
   });
 
   function round(value) {
-    expect(value).to.deep.equal(boss.load(boss.dump(value)));
+    expect(value).to.deep.equal(Boss.load(Boss.dump(value)));
   }
 });

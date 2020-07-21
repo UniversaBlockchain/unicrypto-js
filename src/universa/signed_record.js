@@ -1,4 +1,4 @@
-const Boss = require('../boss/protocol');
+const Boss = require('../Boss/protocol');
 const { encode64Short, decode64 } = require('../utils');
 const { PublicKey, defaultPSSConfig } = require('../pki');
 
@@ -54,12 +54,11 @@ class SignedRecord {
    * @return
    */
   static async packWithKey(key, payload, nonce = null) {
-    const boss = new Boss();
-    const pub = await key.publicKey.packed();
-    const data = boss.dump([nonce, payload]);
+    const pub = key.publicKey.packed;
+    const data = Boss.dump([nonce, payload]);
     const signature = await key.sign(data, defaultPSSConfig());
 
-    return boss.dump([
+    return Boss.dump([
       SignedRecord.RECORD_WITH_KEY,
       pub,
       signature,
@@ -68,8 +67,7 @@ class SignedRecord {
   }
 
   static async unpack(packed) {
-    const boss = new Boss();
-    const outer = boss.load(packed);
+    const outer = Boss.load(packed);
     const recordType = outer[0];
     if (recordType !== SignedRecord.RECORD_WITH_KEY)
       throw new SignedRecordFormatException(`not supported type ${recordType}`);
@@ -77,7 +75,7 @@ class SignedRecord {
     const key = await PublicKey.unpack(outer[1]);
     const signature = outer[2];
     const innerPacked = outer[3];
-    const inner = boss.load(innerPacked);
+    const inner = Boss.load(innerPacked);
     if (!key.verify(innerPacked, signature, defaultPSSConfig()))
       throw new BadSignatureException();
 

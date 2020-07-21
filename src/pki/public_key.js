@@ -2,10 +2,11 @@ var Module = Module || require('../vendor/wasm/wrapper');
 
 const helpers = require('./helpers');
 const utils = require('../utils');
-const Boss = require('../boss/protocol');
+const Boss = require('../Boss/protocol');
 const SHA = require('../hash/sha');
 const { Buffer } = require('buffer');
 const AbstractKey = require('./abstract_key');
+const KeyAddress = require('./key_address');
 
 const FINGERPRINT_SHA512 = '07';
 
@@ -71,9 +72,8 @@ module.exports = class PublicKey extends AbstractKey {
   }
 
   async verifyExtended(signature, data) {
-    const boss = new Boss();
     const dataHash = new SHA('512');
-    const unpacked = boss.load(signature);
+    const unpacked = Boss.load(signature);
     const { exts, sign } = unpacked;
     const verified = await this.verify(exts, sign, {
       pssHash: 'sha512'
@@ -81,7 +81,7 @@ module.exports = class PublicKey extends AbstractKey {
 
     if (!verified) return null;
 
-    const targetSignature = boss.load(exts);
+    const targetSignature = Boss.load(exts);
     const { sha512, key, created_at } = targetSignature;
 
     if (encode64(await dataHash.get(data)) === encode64(sha512))
@@ -109,31 +109,15 @@ module.exports = class PublicKey extends AbstractKey {
   }
 
   get fingerprint() {
-    // if (this._fingerprint) return this._fingerprint;
-
-    // const self = this;
-    // this.key.fingerprint(fp => self._fingerprint = new Uint8Array(fp));
-
     return this._fingerprint;
   }
 
-  async packed() {
-    // const self = this;
-
-    // if (this._packed) return this._packed;
-
-    // this._packed = await this.pack();
-
+  get packed() {
     return this._packed;
   }
 
   async pack() {
     return this._packed;
-    // const self = this;
-
-    // return new Promise(resolve => {
-    //   self.key.pack(packed => resolve(new Uint8Array(packed)));
-    // });
   }
 
   static async packBOSS(key) {
@@ -154,15 +138,6 @@ module.exports = class PublicKey extends AbstractKey {
   getN() { return this.n; }
   getE() { return this.e; }
   getBitStrength() { return this.bitStrength; }
-  // get shortAddress58() { return this.key.getShortAddress58(); }
-  // get shortAddress() {
-  //   return new Uint8Array(mapCall(this.key.getShortAddressBin, this.key));
-  // }
-
-  // get longAddress58() { return this.key.getLongAddress58(); }
-  // get longAddress() {
-  //   return new Uint8Array(mapCall(this.key.getLongAddressBin, this.key));
-  // }
 
   async loadProperties(key, packed) {
     const self = this;
@@ -173,8 +148,8 @@ module.exports = class PublicKey extends AbstractKey {
     key.fingerprint(fp => self._fingerprint = new Uint8Array(fp));
 
     if (this.bitStrength > 1024) {
-      this.longAddress = new Uint8Array(mapCall(key.getLongAddressBin, key));
-      this.shortAddress = new Uint8Array(mapCall(key.getShortAddressBin, key));
+      this.longAddress = new KeyAddress(new Uint8Array(mapCall(key.getLongAddressBin, key)));
+      this.shortAddress = new KeyAddress(new Uint8Array(mapCall(key.getShortAddressBin, key)));
       this.shortAddress58 = key.getShortAddress58();
       this.longAddress58 = key.getLongAddress58();
     }
@@ -255,37 +230,10 @@ module.exports = class PublicKey extends AbstractKey {
   }
 }
 
-/**
- * Converts PEM-formatted key protected via password to an instance
- *
- * @param {String} options.pem - pem formatted key
- */
-function fromPEM(options) {
-  // TODO: may be needed in future
-}
-
-/**
- * Converts an RSA public key to PEM format.
- *
- * @return the PEM-foramatted public key.
- */
-function toPEM(key) {
-  return pki.publicKeyToPem(key);
-};
-
-function fromForge(key) {
-  return key;
-}
-
-function toForge(key) {
-  return key;
-}
-
 function toBOSS(key) {
-  const boss = new Boss();
   const { n, e } = key;
 
-  return boss.dump([
+  return Boss.dump([
     1,
     bigIntToByteArray(e),
     bigIntToByteArray(n)
@@ -293,8 +241,7 @@ function toBOSS(key) {
 }
 
 function fromBOSS(dump) {
-  const boss = new Boss();
-  const parts = boss.load(dump);
+  const parts = Boss.load(dump);
 
   if (parts[0] !== 1) throw new Error('Failed to read key');
 

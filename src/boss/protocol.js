@@ -2,67 +2,110 @@ const Formatter = require('./formatter');
 const Parser = require('./parser');
 const _ = require('../vendor/lodash.custom');
 
-class BossReader {
-  constructor(stream) {
-    this.options = {};
-    this.parser = new Parser(this, stream);
-  }
+const registry = {
+  serializers: {},
+  constructors: {},
+  register: function(alias, bossSerializable) {
+    const deserializeBOSS = bossSerializable.deserializeFromBOSS;
+    const name = bossSerializable.className;
 
-  read() {
-    return this.parser.get();
+    if (!deserializeBOSS)
+      throw new Error(`Failed to register BOSS type ${alias}: deserializeFromBOSS not found`);
+
+    if (!name)
+      throw new Error(`Failed to register BOSS type ${alias}: className not found`);
+
+    if (!this.serializers[name]) {
+      let serializer;
+      let serializeBOSS = bossSerializable.serializeToBOSS;
+
+      if (serializeBOSS)
+        serializer = (instance) => serializeBOSS(instance);
+      else
+        serializer = (instance) => instance.serializeToBOSS();
+
+      this.serializers[name] = {
+        aliases: [alias],
+        serialize: serializer
+      };
+    } else {
+      if (this.serializers[name].aliases.indexOf(alias) === -1)
+        this.serializers[name].aliases.push(alias);
+    }
+
+    this.constructors[alias] = (serialized) => deserializeBOSS(serialized);
+  },
+  serialize: function(constructorName, instance) {
+    const name = instance.constructor.name;
+    const serializer = this.serializers[name];
+
+    if (!serializer) return;
+    const serialized = serializer.serialize(instance);
+
+    serialized['__t'] = serializer.aliases[0];
+
+    return serialized;
+  },
+  deserialize: function(dict) {
+    const type = dict['__type'] || dict['__t'];
+
+    if (!type) return;
+
+    const construct = this.constructors[type];
+
+    if (!construct) {
+      return dict;
+      // FIXME: should support unknown classes?
+      // throw new Error(`Unknown BOSS deserialize type: ${type}`);
+    }
+
+    return construct(dict);
   }
+};
+
+class Reader {
+  constructor(stream) { this.parser = new Parser(registry, stream); }
+  read() { return this.parser.get(); }
 }
 
-class BossWriter {
-  constructor() {
-    this.options = {};
-    this.formatter = new Formatter(this);
-  }
-
-  write(arg) {
-    this.formatter.put(arg);
-  }
-
-  get() {
-    return this.formatter.toArray();
-  }
+class Writer {
+  constructor() { this.formatter = new Formatter(registry); }
+  write(arg) { this.formatter.put(arg); }
+  get() { return this.formatter.toArray(); }
 }
 
-class BossProtocol {
-  constructor(options = {}) {
-    this.options = options;
+/**
+ * Instantiates Formatter class and returns encoded string
+ *
+ * @param  {...*} args
+ *
+ * @return {String}
+ */
+function dump(...args) {
+  const formatter = new Formatter(registry);
 
-    // Aliases
-    this.pack = this.dump.bind(this);
-    this.unpack = this.load.bind(this);
-  }
+  for (const arg of args) formatter.put(_.cloneDeep(arg));
 
-  /**
-   * Instantiates Formatter class and returns encoded string
-   *
-   * @param  {...*} args
-   *
-   * @return {String}
-   */
-  dump(...args) {
-    const formatter = new Formatter(this);
+  return formatter.toArray(); // TODO: Should rename method
+}
 
-    for (const arg of args) formatter.put(_.cloneDeep(arg));
+/**
+ * Instantiates Parser class and returns decoded value
+ *
+ * @param  {String}
+ * @return {Array}
+ */
+function load(source) {
+  const parser = new Parser(registry, source);
 
-    return formatter.toArray(); // TODO: Should rename method
-  }
+  return parser.get();
+}
 
-  /**
-   * Instantiates Parser class and returns decoded value
-   *
-   * @param  {String}
-   * @return {Array}
-   */
-  load(source) {
-    const parser = new Parser(this, source);
-
-    return parser.get();
-  }
+const Protocol = {
+  load,
+  dump,
+  pack: dump,
+  unpack: load,
 
   /**
    * Instantiates Parser class and decodes all passed source.
@@ -70,8 +113,8 @@ class BossProtocol {
    * @param  {String}
    * @return {Array}
    */
-  loadAll(source) {
-    const parser = new Parser(this, source);
+  loadAll: function(source) {
+    const parser = new Parser(registry, source);
     const result = [];
 
     var value;
@@ -79,15 +122,13 @@ class BossProtocol {
     while (value = parser.get()) result.push(value);
 
     return result;
-  }
+  },
 
-  check(condition, message = null) {
-    if (condition !== message) throw new Error('Invalid argument');
+  Writer,
+  Reader,
+  register: (alias, bossSerializable) => {
+    registry.register(alias, bossSerializable);
   }
 };
 
-
-BossProtocol.writer = BossWriter;
-BossProtocol.reader = BossReader;
-
-module.exports = BossProtocol;
+module.exports = Protocol;

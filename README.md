@@ -270,9 +270,13 @@ publicKey.getBitStrength(); // number
 Public key address
 
 ```js
-publicKey.shortAddress;   // short address (Uint8Array)
+publicKey.shortAddress.bytes;   // short address (Uint8Array)
+publicKey.shortAddress.base58;   // short address (Uint8Array)
+publicKey.longAddress.bytes;    // long address (Uint8Array)
+publicKey.longAddress.base58;    // long address (Uint8Array)
+
+// DEPRECATED
 publicKey.shortAddress58; // short address (base58)
-publicKey.longAddress;    // long address (Uint8Array)
 publicKey.longAddress58;  // long address (base58)
 ```
 
@@ -309,7 +313,7 @@ const keyPacked = await key.pack(); // Uint8Array
 const keyPackedProtected = await key.pack("somepassword"); // Uint8Array
 const keyPackedProtected1000 = await key.pack({ password: "qwerty", rounds: 1000 });
 
-const bossEncodedPublic = await key.publicKey.packed();
+const bossEncodedPublic = key.publicKey.packed;
 ```
 
 Get type of key package. There are 4 types of what key binary package may contain.
@@ -545,8 +549,6 @@ Encode/decode
 ```js
 import { Boss } from 'unicrypto';
 
-const boss = new Boss();
-
 const data = {
   a: decode64("abc")
   b: new Date(),
@@ -554,8 +556,8 @@ const data = {
   d: { a: 1 }
 };
 
-const encoded = boss.dump(data); // Uint8Array
-const decoded = boss.load(encoded); // original data
+const encoded = Boss.dump(data); // Uint8Array
+const decoded = Boss.load(encoded); // original data
 ```
 
 Encode stream
@@ -582,6 +584,46 @@ const arg3 = reader.read(); // 2
 const arg4 = reader.read(); // 3
 const arg5 = reader.read(); // undefined
 ```
+
+#### Typesript class registration
+You can pack and load instance of your class by implementing BossSerializable and BossDeserializable interfaces:
+
+```js
+import { BossSerializable, Boss } from 'unicrypto';
+
+interface MyClassSerialized {
+  someValue: string;
+}
+
+class MyClass implements BossSerializable {
+  someValue: string;
+
+  constructor(someValue: string) { this.someValue = someValue; }
+
+  serializeToBOSS() {
+    return { someValue };
+  }
+
+  // You need to implement method according to BossDeserializable interface
+  static deserializeFromBOSS(serialized: MyClassSerialized) {
+    return new MyClass(serialized.someValue);
+  }
+}
+
+Boss.register("MyClassType", MyClass);
+```
+
+And you can pack/load instances like this:
+
+```js
+import { Boss } from 'unicrypto';
+
+const myInstance: MyClass;
+
+const packed = Boss.dump(myInstance); // Uint8Array
+const loaded = Boss.load(packed) as MyClass;
+```
+
 
 ### AES
 

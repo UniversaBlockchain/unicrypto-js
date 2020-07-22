@@ -32,8 +32,10 @@ declare module 'unicrypto' {
   }
 
   export class KeyAddress {
+
     constructor(bytes: Uint8Array);
 
+    readonly bytes: Uint8Array;
     readonly base58: string;
 
     isLong(): boolean;

@@ -1,4 +1,4 @@
-const Boss = require('../Boss/protocol');
+const Boss = require('../boss/protocol');
 const { encode64Short, decode64 } = require('../utils');
 const { PublicKey, defaultPSSConfig } = require('../pki');
 

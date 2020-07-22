@@ -2,7 +2,7 @@ var Module = Module || require('../vendor/wasm/wrapper');
 
 const helpers = require('./helpers');
 const utils = require('../utils');
-const Boss = require('../Boss/protocol');
+const Boss = require('../boss/protocol');
 const SHA = require('../hash/sha');
 const { Buffer } = require('buffer');
 const AbstractKey = require('./abstract_key');

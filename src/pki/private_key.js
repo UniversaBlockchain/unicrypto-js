@@ -1,6 +1,6 @@
 var Module = Module || require('../vendor/wasm/wrapper');
 
-const Boss = require('../Boss/protocol');
+const Boss = require('../boss/protocol');
 const utils = require('../utils');
 const helpers = require('./helpers');
 const PublicKey = require('./public_key');

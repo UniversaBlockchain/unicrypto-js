@@ -1,4 +1,5 @@
 const fs = require('fs');
+const path = require('path');
 const gentlyCopy = require('gently-copy');
 const buildWASM = require('./build_wasm');
 const VERSION = process.env.npm_package_version;
@@ -15,15 +16,15 @@ function copyWASM(destination) {
 function tryToCopy() {
   distPaths.map(path => {
     const relative = '../../' + path;
-    if (fs.existsSync(relative)) {
-      if (path === "public") {
-        const jsPath = relative + '/js';
 
-        if (fs.existsSync(jsPath)) copyWASM(jsPath);
-        else copyWASM(relative);
-      }
-      else copyWASM(relative);
-    }
+    if (!fs.existsSync(relative)) return;
+
+    if (path !== "public") return copyWASM(relative);
+
+    const jsPath = relative + '/js';
+
+    if (fs.existsSync(jsPath)) copyWASM(jsPath);
+    else copyWASM(relative);
   });
 
   if (!copied) console.log("WARNING: Cannot find destination directory. Please, copy node_modules/unicrypto/dist/crypto.v${VERSION}.wasm to your frontend public directory");

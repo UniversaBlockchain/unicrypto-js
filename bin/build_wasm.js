@@ -16,6 +16,7 @@ module.exports = new Promise((resolve, reject) => {
 
   fs.writeFileSync(`dist/crypto.v${VERSION}.js`, data);
   fs.writeFileSync(wasmPath, data);
+  fs.copyFileSync(fromPathWASM, path.resolve(__dirname, "..", `src/vendor/wasm/crypto.v${VERSION}.wasm`));
   const fromPathWASM = path.resolve(__dirname, "..", "src/vendor/wasm/crypto.wasm");
   const toPathWASM = path.resolve(__dirname, "..", `dist/crypto.v${VERSION}.wasm`);
   fs.copyFileSync(fromPathWASM, toPathWASM);

@@ -14,7 +14,8 @@ module.exports = new Promise((resolve, reject) => {
 
   // data += 'Module.isReady = new Promise(resolve => { Module.onRuntimeInitialized = resolve; });';
 
-  fs.writeFile(`dist/crypto.v${VERSION}.js`, data, () => resolve());
+  fs.writeFileSync(`dist/crypto.v${VERSION}.js`, data);
+  fs.writeFileSync(wasmPath, data);
   const fromPathWASM = path.resolve(__dirname, "..", "src/vendor/wasm/crypto.wasm");
   const toPathWASM = path.resolve(__dirname, "..", `dist/crypto.v${VERSION}.wasm`);
   fs.copyFileSync(fromPathWASM, toPathWASM);

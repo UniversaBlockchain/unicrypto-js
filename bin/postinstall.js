@@ -16,14 +16,14 @@ function copyWASM(destination) {
 }
 
 function tryToCopy() {
-  distPaths.map(path => {
+  distPaths.map(distPath => {
 
-    const relative = path.resolve(projectRoot, path);
+    const relative = path.resolve(projectRoot, distPath);
     console.log("RELATIVE", relative);
 
     if (!fs.existsSync(relative)) return;
 
-    if (path !== "public") return copyWASM(relative);
+    if (distPath !== "public") return copyWASM(relative);
 
     const jsPath = relative + '/js';
 

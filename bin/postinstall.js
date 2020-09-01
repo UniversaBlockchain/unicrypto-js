@@ -18,7 +18,7 @@ function copyWASM(destination) {
 function tryToCopy() {
   distPaths.map(path => {
 
-    const relative = path.join(projectRoot, path);
+    const relative = path.resolve(projectRoot, path);
     console.log("RELATIVE", relative);
 
     if (!fs.existsSync(relative)) return;

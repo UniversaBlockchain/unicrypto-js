@@ -8,7 +8,12 @@ const distPaths = ['build', 'public', 'dist'];
 
 let copied = false;
 
-const projectRoot = path.dirname(require.main.filename);
+// node_modules/unicrypto/bin
+let projectRoot = path.dirname(require.main.filename);
+
+projectRoot = path.dirname(projectRoot);
+projectRoot = path.dirname(projectRoot);
+projectRoot = path.dirname(projectRoot);
 
 function copyWASM(destination) {
   gentlyCopy([`./dist/crypto.v${VERSION}.wasm`], `${destination}/crypto.v${VERSION}.wasm`);

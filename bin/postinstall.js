@@ -8,6 +8,8 @@ const distPaths = ['build', 'public', 'dist'];
 
 let copied = false;
 
+const projectRoot = path.dirname(require.main.filename);
+
 function copyWASM(destination) {
   gentlyCopy([`./dist/crypto.v${VERSION}.wasm`], `${destination}/crypto.v${VERSION}.wasm`);
   copied = true;
@@ -15,7 +17,7 @@ function copyWASM(destination) {
 
 function tryToCopy() {
   distPaths.map(path => {
-    const relative = '../../' + path;
+    const relative = path.join(projectRoot, path);
 
     if (!fs.existsSync(relative)) return;
 

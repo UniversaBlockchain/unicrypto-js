@@ -3,21 +3,14 @@ const path = require('path');
 const VERSION = process.env.npm_package_version;
 
 module.exports = new Promise((resolve, reject) => {
-  const quote = /'/g;
-  const newline = /\n/g;
-  const comment = /\/\/.+\n/g;
-  const wasmPath = path.resolve(__dirname, "..", "src/vendor/wasm/crypto.js");
+  const modulePath = path.resolve(__dirname, "..", "src/vendor/wasm/crypto.wasm");
+  const wrapperPath = path.resolve(__dirname, "..", "src/vendor/wasm/wrapper.js");
+  let wrapper = fs.readFileSync(wrapperPath, 'utf-8');
+  wrapper = wrapper.replace('crypto.wasm', `crypto.v${VERSION}.wasm`);
 
-  let data = fs.readFileSync(wasmPath);
-  data = data.toString();
-  data = data.replace('crypto.wasm', `crypto.v${VERSION}.wasm`)
+  fs.writeFileSync(`dist/crypto.v${VERSION}.js`, wrapper);
+  fs.writeFileSync(wrapperPath, wrapper);
 
-  // data += 'Module.isReady = new Promise(resolve => { Module.onRuntimeInitialized = resolve; });';
-
-  fs.writeFileSync(`dist/crypto.v${VERSION}.js`, data);
-  fs.writeFileSync(wasmPath, data);
-  const fromPathWASM = path.resolve(__dirname, "..", "src/vendor/wasm/crypto.wasm");
-  const toPathWASM = path.resolve(__dirname, "..", `dist/crypto.v${VERSION}.wasm`);
-  fs.copyFileSync(fromPathWASM, path.resolve(__dirname, "..", `src/vendor/wasm/crypto.v${VERSION}.wasm`));
-  fs.copyFileSync(fromPathWASM, toPathWASM);
+  fs.copyFileSync(modulePath, path.resolve(__dirname, "..", `src/vendor/wasm/crypto.v${VERSION}.wasm`));
+  fs.copyFileSync(modulePath, path.resolve(__dirname, "..", `dist/crypto.v${VERSION}.wasm`));
 });

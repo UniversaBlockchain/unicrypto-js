@@ -3,6 +3,7 @@ const path = require('path');
 const VERSION = process.env.npm_package_version;
 
 module.exports = new Promise((resolve, reject) => {
+  console.log("WASM build started...");
   const modulePath = path.resolve(__dirname, "..", "src/vendor/wasm/crypto.wasm");
   const wrapperPath = path.resolve(__dirname, "..", "src/vendor/wasm/wrapper.js");
   let wrapper = fs.readFileSync(wrapperPath, 'utf-8');
@@ -13,4 +14,6 @@ module.exports = new Promise((resolve, reject) => {
 
   fs.copyFileSync(modulePath, path.resolve(__dirname, "..", `src/vendor/wasm/crypto.v${VERSION}.wasm`));
   fs.copyFileSync(modulePath, path.resolve(__dirname, "..", `dist/crypto.v${VERSION}.wasm`));
+
+  console.log("WASM build done.");
 });

@@ -19,7 +19,7 @@ function tryToCopy() {
   distPaths.map(distPath => {
 
     const relative = path.resolve(projectRoot, distPath);
-    console.log("RELATIVE", relative);
+    console.log(projectRoot, "RELATIVE", relative);
 
     if (!fs.existsSync(relative)) return;
 

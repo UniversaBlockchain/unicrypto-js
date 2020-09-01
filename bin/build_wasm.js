@@ -16,4 +16,6 @@ module.exports = new Promise((resolve, reject) => {
   fs.copyFileSync(modulePath, path.resolve(__dirname, "..", `dist/crypto.v${VERSION}.wasm`));
 
   console.log("WASM build done.");
+
+  resolve();
 });

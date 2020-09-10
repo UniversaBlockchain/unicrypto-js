@@ -22,9 +22,7 @@ function copyWASM(destination) {
 
 function tryToCopy() {
   distPaths.map(distPath => {
-
     const relative = path.resolve(projectRoot, distPath);
-    console.log(projectRoot, "RELATIVE", relative);
 
     if (!fs.existsSync(relative)) return;
 
@@ -36,7 +34,7 @@ function tryToCopy() {
     else copyWASM(relative);
   });
 
-  if (!copied) console.log("WARNING: Cannot find destination directory. Please, copy node_modules/unicrypto/dist/crypto.v${VERSION}.wasm to your frontend public directory");
+  if (!copied) console.log(`WARNING: Cannot find destination directory. Please, copy node_modules/unicrypto/dist/crypto.v${VERSION}.wasm to your frontend public directory`);
 }
 
 buildWASM.then(tryToCopy);

@@ -80,6 +80,14 @@ describe('Hash', function() {
         expect(await sha512.get(textToBytes(msg), 'hex')).to.equal(hashFor[msg]);
       });
 
+      it('should calculate hash for message "one" (created with number type)', async () => {
+        var msg = 'one';
+
+        sha512 = new SHA('512');
+
+        expect(await sha512.get(textToBytes(msg), 'hex')).to.equal(hashFor[msg]);
+      });
+
       it('should calculate hash for message "onetwo" divided by parts', async () => {
         await sha512.put(textToBytes('one'));
         await sha512.put(textToBytes('two'));

@@ -12,9 +12,10 @@ const StringTypes = {
 
 class SHA {
   constructor(hashType) {
-    this.hashType = hashType;
-    const wasmTpe = SHA.wasmType(hashType);
-    const tpe = typeof wasmTpe === 'number' ? wasmTpe : hashType;
+    this.hashType = hashType + '';
+    // console.log(this.hashType);
+    const wasmTpe = SHA.wasmType(this.hashType);
+    const tpe = typeof wasmTpe === 'number' ? wasmTpe : this.hashType;
     this.wasmType = tpe;
     this.empty = true;
     this.hash = null;

@@ -104,7 +104,7 @@ Random byte array for given length
 ```js
 import { randomBytes } from 'unicrypto';
 
-const bytes16 = randomBytes(16); // Uint8Array
+const bytes16 = randomBytes(16); // Buffer
 ```
 
 HashId for binary data
@@ -286,6 +286,9 @@ Check if given address is valid
 import { PublicKey } from 'unicrypto';
 
 PublicKey.isValidAddress(publicKey.shortAddress) // true
+
+// accepts bytes representation of KeyAddress
+PublicKey.isValidAddress(publicKey.shortAddress.bytes) // true
 
 // accepts base58 representation of address too
 PublicKey.isValidAddress(publicKey.shortAddress58) // true
@@ -483,13 +486,13 @@ const maxLength = publicKey.encryptionMaxLength(options);
 OAEP default hash
 
 ```js
-publicKey.DEFAULT_OAEP_HASH // SHA1 instance
+PublicKey.DEFAULT_OAEP_HASH // SHA1
 ```
 
 MGF1 default hash
 
 ```js
-publicKey.DEFAULT_MGF1_HASH // SHA1 instance
+PublicKey.DEFAULT_MGF1_HASH // SHA1
 ```
 
 PSS sign/verify
@@ -563,7 +566,7 @@ const decoded = Boss.load(encoded); // original data
 Encode stream
 
 ```js
-const writer = new Boss.writer();
+const writer = new Boss.Writer();
 
 writer.write(0);
 writer.write(1);
@@ -576,7 +579,7 @@ const dump = writer.get(); // Uint8Array
 Decode stream
 
 ```js
-const reader = new Boss.reader(hexToBytes('00081018'));
+const reader = new Boss.Reader(hexToBytes('00081018'));
 
 const arg1 = reader.read(); // 0
 const arg2 = reader.read(); // 1

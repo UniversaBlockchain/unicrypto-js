@@ -100,13 +100,13 @@ class KeyInfo {
 
     switch(this.prf) {
       case PRF.HMAC_SHA1:
-        md = new SHA(1);
+        md = 'sha1';
         break;
       case PRF.HMAC_SHA256:
-        md = new SHA(256);
+        md = 'sha256';
         break;
       case PRF.HMAC_SHA512:
-        md = new SHA(512);
+        md = 'sha512';
         break;
       default:
         throw new Error("KeyInfo: unknown hash scheme for pbkdf2")

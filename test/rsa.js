@@ -22,7 +22,19 @@ describe('RSA', function() {
   Minicrypto.seed = Minicrypto.seed || {};
   const seedKeys = Minicrypto.seed.keys || require('./seed/keys');
   const seedOAEP = Minicrypto.seed.oaep || require('./seed/oaep');
+
+  const seedOAEPExp = {
+    e: seedOAEP.e.toString(16),
+    p: seedOAEP.p.toString(16),
+    q: seedOAEP.q.toString(16)
+  };
   const seedPSS = Minicrypto.seed.pss || require('./seed/pss');
+  const seedPSSExp = {
+    e: seedPSS.e.toString(16),
+    p: seedPSS.p.toString(16),
+    q: seedPSS.q.toString(16),
+    n: seedPSS.n.toString(16)
+  };
   const seedCustomSalt = Minicrypto.seed.customSalt || require('./seed/custom_salt');
 
   function fp(key) {
@@ -36,6 +48,16 @@ describe('RSA', function() {
 
       expect(priv.publicKey.getBitStrength()).to.be.equal(2048);
     });
+
+    // it.only('should not create memory leak', async () => {
+    //   for (let i = 0; i < 1000; ++i) {
+    //     const publicKey = (await PrivateKey.generate({strength: 2048})).publicKey;
+
+    //     console.log("i = " + i);
+    //     console.log(PublicKey.isValidAddress(publicKey.shortAddress));
+    //     console.log(PublicKey.isValidAddress(publicKey.shortAddress58));
+    //   }
+    // });
 
     it('should pack with password', async () => {
       this.timeout(8000);
@@ -127,9 +149,12 @@ describe('RSA', function() {
       expect(pub.encryptionMaxLength(oaepOpts)).to.equal(86);
     });
 
-    // need new key
+    // wasm doesnt support 1024 keys, need new key
     it.skip('should verify address', async () => {
-      const pub = await PublicKey.unpack(decode64("HggMEbyAu/gvCQaCzpwjOKwrnahx9zaNB+7UEEOkQNa28HRU9R+437qvA1wCq2HqSM7rb81Idu1SDWDh7EYZcZ2KW4uAf6+44KPfxzdyPua0t9k6JYTuamSdBglTdIg0skVFmDlO4KqxLXthpR9SeppB9sFof+JTcpjKKo9ZRvjl/Qkdvcs="));
+      const pub = await PublicKey.unpack(seedPSSExp);
+
+      console.log(pub);
+      // const pub = await PublicKey.unpack(decode64("HggMEbyAu/gvCQaCzpwjOKwrnahx9zaNB+7UEEOkQNa28HRU9R+437qvA1wCq2HqSM7rb81Idu1SDWDh7EYZcZ2KW4uAf6+44KPfxzdyPua0t9k6JYTuamSdBglTdIg0skVFmDlO4KqxLXthpR9SeppB9sFof+JTcpjKKo9ZRvjl/Qkdvcs="));
 
       const addressString = pub.longAddress58;
       const addressShortString = pub.shortAddress58;
@@ -139,9 +164,10 @@ describe('RSA', function() {
       expect(PublicKey.isValidAddress(addressShortString + "a")).to.be.false;
     });
 
-    // it('should encrypt data with default parameters', async () => {
-
-    // });
+    it('should validate address with leading zero crc32', async () => {
+      // YMMgGF59LbRwNiRupcGhCbVjJjFWxDVk7DSbF6RHopWJvgqbMi
+      expect(PublicKey.isValidAddress("YMMgGF59LbRwNiRupcGhCbVjJjFWxDVk7DSbF6RHopWJvgqbMi")).to.be.true;
+    });
 
     it('should encrypt data with OAEP and MGF1 with string opts', async () => {
       // To make test repeatable
@@ -215,22 +241,22 @@ describe('RSA', function() {
       var privateKey, publicKey;
 
       beforeEach(async () => {
-        // TODO: need to implement in wasm
-        // privateKey = await PrivateKey.unpack({
-        //   e: seedCustomSalt.e.toString(16),
-        //   p: seedCustomSalt.p.toString(16),
-        //   q: seedCustomSalt.q.toString(16)
-        // });
-        // publicKey = privateKey.publicKey;
+
+        privateKey = await PrivateKey.unpack({
+          e: seedCustomSalt.e.toString(16),
+          p: seedCustomSalt.p.toString(16),
+          q: seedCustomSalt.q.toString(16)
+        });
+        publicKey = privateKey.publicKey;
       });
 
-      it.skip('should restore keys by exponents with correct modulus', function() {
+      it('should restore keys by exponents with correct modulus', function() {
         var n = publicKey.getN();
 
         expect(n).to.equal(seedCustomSalt.n.toString(16));
       });
 
-      it.skip('should use maximum salt length for signatures by default (490)', async () => {
+      it('should use maximum salt length for signatures by default (490)', async () => {
         expect(await publicKey.verify(seedCustomSalt.message, seedCustomSalt.signature, { pssHash: 'sha1', mgf1Hash: 'sha1' })).to.equal(true);
 
         expect(await publicKey.verify(seedCustomSalt.message, seedCustomSalt.signature, {
@@ -240,13 +266,13 @@ describe('RSA', function() {
         })).to.equal(true);
       });
 
-      it.skip('signature check with default params expect work for signature created with default params', async () => {
+      it('signature check with default params expect work for signature created with default params', async () => {
         var signature = await privateKey.sign(seedCustomSalt.message, { pssHash: 'sha1' });
 
         expect(await publicKey.verify(seedCustomSalt.message, signature, { pssHash: 'sha1' })).to.equal(true);
       });
 
-      it.skip('should pss sign with sha3', async () => {
+      it('should pss sign with sha3', async () => {
         var signature = await privateKey.sign(seedCustomSalt.message, { pssHash: "sha3_384" });
 
         expect(await publicKey.verify(seedCustomSalt.message, signature, { pssHash: "sha3_384" })).to.equal(true);
@@ -273,7 +299,7 @@ describe('RSA', function() {
   });
 
   describe('Private key', function() {
-    it.skip('should read from BOSS format', async () => {
+    it('should read from BOSS format', async () => {
       var privateKey = await PrivateKey.unpack({
         e: seedOAEP.e.toString(16),
         p: seedOAEP.p.toString(16),
@@ -290,12 +316,8 @@ describe('RSA', function() {
       expect(unpacked2.getQ()).to.equal(privateKey.getQ());
     });
 
-    it.skip('should restore key from exponents (e, p, q)', async () => {
-      var privateKey = await PrivateKey.unpack({
-        e: seedOAEP.e.toString(16),
-        p: seedOAEP.p.toString(16),
-        q: seedOAEP.q.toString(16)
-      });
+    it('should restore key from exponents (e, p, q)', async () => {
+      var privateKey = await PrivateKey.unpack(seedOAEPExp);
 
       expect(privateKey.getN()).to.equal(seedOAEP.n.toString(16));
       expect(privateKey.getE()).to.equal(seedOAEP.e.toString(16));
@@ -303,51 +325,51 @@ describe('RSA', function() {
       expect(privateKey.getQ()).to.equal(seedOAEP.q.toString(16));
     });
 
-    it.skip('should decrypt data with OAEP and MGF1', async () => {
+    it('should decrypt data with OAEP and MGF1', async () => {
       var oaepOpts = { seed: seedOAEP.seed, oaepHash: 'sha1' };
-      var privateKey = await PrivateKey.unpack(seedOAEP);
+      var privateKey = await PrivateKey.unpack(seedOAEPExp);
       var decrypted = await privateKey.decrypt(seedOAEP.encryptedMessage, oaepOpts);
 
       expect(hex(decrypted)).to.equal(hex(seedOAEP.originalMessage));
     });
 
-    it.skip('should encrypt with sha3 pss', function() {
-      var privateKey = new PrivateKey('EXPONENTS', seedOAEP);
+    it('should encrypt with sha3 pss', async () => {
+      var privateKey = await PrivateKey.unpack(seedOAEPExp);
       var publicKey = privateKey.publicKey;
 
       var oaepOpts = {
         // seed: oaep.seed,
-        pssHash: new SHA("3_384"),
-        mgf1Hash: new SHA(1)
+        pssHash: "sha3_384",
+        mgf1Hash: 'sha1'
       };
 
-      var encrypted = publicKey.encrypt(seedOAEP.originalMessage, oaepOpts);
-      var decrypted = privateKey.decrypt(encrypted, oaepOpts);
+      var encrypted = await publicKey.encrypt(seedOAEP.originalMessage, oaepOpts);
+      var decrypted = await privateKey.decrypt(encrypted, oaepOpts);
 
       expect(encode64(seedOAEP.originalMessage)).to.equal(encode64(decrypted));
     });
 
-    it.skip('should sign message with PSS', function() {
-      var privateKey = new PrivateKey('EXPONENTS', seedPSS);
+    it('should sign message with PSS', async () => {
+      var privateKey = await PrivateKey.unpack(seedPSSExp);
       var options = {
         salt: seedPSS.salt,
-        pssHash: new SHA(1),
-        mgf1Hash: new SHA(1)
+        pssHash: 'sha1',
+        mgf1Hash: 'sha1'
       };
 
-      var signature = privateKey.sign(seedPSS.message, options);
+      var signature = await privateKey.sign(seedPSS.message, options);
 
       expect(hex(signature)).to.equal(hex(seedPSS.signature));
     });
 
-    it.skip('should sign message with PSS with 256 params', function() {
-      var privateKey = new PrivateKey('EXPONENTS', seedPSS);
+    it('should sign message with PSS with 256 params', async () => {
+      var privateKey = await PrivateKey.unpack(seedPSSExp);
 
-      var signature = privateKey.sign(seedPSS.message, { salt: seedPSS.salt, mgf1Hash: new SHA(256), pssHash: new SHA(256) });
+      var signature = await privateKey.sign(seedPSS.message, { salt: seedPSS.salt, mgf1Hash: 'sha256', pssHash: 'sha256' });
 
       expect(hex(signature)).to.equal('39703c8bfbf6a54db3242769c03af7cedc4237e210aafd7802fcd34f68d9a7c57e766b59b8940196ca5ee6fbb549f5c8eb224a7e4280253b8f425c91014e05c08dacb830b4a753199b070caac0908368efa2134ec32670f48f8166e07564b5c3aa06a871772252b502f384ca96a4ae916805c255146b4b71ff7e74642f00b356');
 
-      var isCorrect = privateKey.publicKey.verify(seedPSS.message, signature, { salt: seedPSS.salt, mgf1Hash: new SHA(256), pssHash: new SHA(256) });
+      var isCorrect = await privateKey.publicKey.verify(seedPSS.message, signature, { salt: seedPSS.salt, mgf1Hash: 'sha256', pssHash: 'sha256' });
 
       expect(isCorrect).to.equal(true);
     });
@@ -382,6 +404,12 @@ describe('RSA', function() {
 
       expect(hex(seedPSS.message)).to.equal(hex(decrypted2));
       expect(encode64(symmetricKey.pack())).to.equal(encode64(keyBytes));
+    });
+
+    it('should generate key from password', async () => {
+      const symmetricKey3 = await SymmetricKey.fromPassword("abc", 100);
+
+      expect(symmetricKey3 instanceof SymmetricKey).to.equal(true);
     });
   });
 

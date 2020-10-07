@@ -159,7 +159,10 @@ module.exports = class PublicKey extends AbstractKey {
   }
 
   static async unpack(options) {
-    const key = await PublicKey.unpackBOSS(options);
+    let key;
+
+    if (options.n && options.e) key = await PublicKey.unpackExponents(options);
+    else key = await PublicKey.unpackBOSS(options);
 
     const load = () => PublicKey.unpackBOSS(options);
     const unload = (key) => key.delete();
@@ -183,6 +186,18 @@ module.exports = class PublicKey extends AbstractKey {
     });
   }
 
+  static async unpackExponents(options) {
+    await Module.isReady;
+
+    const { e, n } = options;
+
+    return new Promise(resolve => {
+      Module.PublicKeyImpl.initFromHexExponents(e, n, (key) => {
+        resolve(key);
+      });
+    });
+  }
+
   static async fromPrivate(priv) {
     const key = new Module.PublicKeyImpl(priv);
     const packed = await PublicKey.packBOSS(key);
@@ -198,8 +213,13 @@ module.exports = class PublicKey extends AbstractKey {
     return instance;
   }
 
+  static get DEFAULT_MGF1_HASH() { return 'sha1'; }
+  static get DEFAULT_OAEP_HASH() { return 'sha1'; }
+
   static isValidAddress(address) {
     var decoded;
+
+    if (address instanceof KeyAddress) address = address.bytes;
 
     try {
       decoded = decode58(address);
@@ -217,7 +237,7 @@ module.exports = class PublicKey extends AbstractKey {
 
     if (checksum.length < 4) {
       var buf = new Uint8Array(new ArrayBuffer(4));
-      buf.set(checksum, r4 - checksum.length);
+      buf.set(checksum, 4 - checksum.length);
       checksum = buf;
     }
 

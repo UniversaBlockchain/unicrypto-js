@@ -29,7 +29,8 @@ class SymmetricKey {
 
   static async fromPassword(password, rounds, salt = null) {
     const ki = new KeyInfo({
-      algorithm: KeyInfo.PRF.HMAC_SHA256,
+      algorithm: KeyInfo.Algorithm.AES256,
+      prf: KeyInfo.PRF.HMAC_SHA256,
       rounds,
       salt,
       tag: null,

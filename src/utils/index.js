@@ -11,8 +11,25 @@ const { BigInteger } = jsbn;
 const engLower = "qwertyuiopasdfghjklzxcvbnm";
 const idChars = (engLower + engLower.toUpperCase() + "_1234567890").split("");
 
-crc32.bytes = (data) =>
-  bytes.hexToBytes((new BigInteger(crc32(data) + '', 10)).toString(16));
+crc32.bytes = (data) => {
+  const hex = (new BigInteger(crc32(data) + '', 10)).toString(16);
+
+  var a = [];
+
+  for (var i = hex.length; i >= 0; i -= 2) {
+    var start = i - 2;
+    var len = 2;
+
+    if (start < 0) {
+      start = 0;
+      len = 1;
+    }
+
+    a.unshift(parseInt(hex.substr(start, len), 16));
+  }
+
+  return Uint8Array.from(a);
+}
 //--------------------------------------------------------------
 
 exports.hashId = SHA.hashId;

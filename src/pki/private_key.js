@@ -75,7 +75,7 @@ module.exports = class PrivateKey extends AbstractKey {
       }
 
       if (options.salt)
-        key.signWithCustomSalt(data, hashType, mgf1Type, salt, cb);
+        key.signWithCustomSalt(data, hashType, mgf1Type, options.salt, cb);
       else
         key.sign(data, hashType, mgf1Type, saltLength, cb);
     });
@@ -132,29 +132,8 @@ module.exports = class PrivateKey extends AbstractKey {
     return packed;
   }
 
-  // async packBOSS(options) {
-  //   const self = this;
-  //   const key = options.key || await this.load();
-
-  //   return new Promise(resolve => {
-  //     const cb = (result) => {
-  //       if (self.unload) self.unload(key);
-  //       resolve(result);
-  //     };
-
-  //     if (!options)
-  //       key.pack(bin => cb(new Uint8Array(bin)));
-  //     else {
-  //       const password = options.password || options;
-  //       const rounds = options.rounds || 160000;
-
-  //       key.packWithPassword(password, rounds, (err, packed) => {
-  //         if (err === '') cb(new Uint8Array(packed));
-  //         else reject(err);
-  //       });
-  //     }
-  //   });
-  // }
+  static get DEFAULT_MGF1_HASH() { return 'sha1'; }
+  static get DEFAULT_OAEP_HASH() { return 'sha1'; }
 
   static async packBOSS(options) {
     const { key, password } = options;
@@ -211,14 +190,15 @@ module.exports = class PrivateKey extends AbstractKey {
   }
 
   static async unpackExponents(options) {
+    await Module.isReady;
+
     const { e, p, q } = options;
 
-    return PrivateKey.unpackBOSS(Boss.dump([
-      AbstractKey.TYPE_PRIVATE,
-      bigIntToByteArray(new BigInteger(e, 16)),
-      bigIntToByteArray(new BigInteger(p, 16)),
-      bigIntToByteArray(new BigInteger(q, 16))
-    ]));
+    return new Promise(resolve => {
+      Module.PrivateKeyImpl.initFromHexExponents(e, p, q, (key) => {
+        resolve(key);
+      });
+    });
   }
 
   static async generate(options) {

@@ -31,6 +31,20 @@ declare module 'unicrypto' {
     constructor(value: any, encoding: any);
   }
 
+  export class DiffieHellman {
+    secret: string | null;
+    publicKey: string: null;
+    prime: string;
+    generator: string;
+
+    constructor(prime: string, generator?: string);
+
+    generateKeys(): string;
+    computeSecret(publicKey: string): string;
+
+    static generate(primeLength: number, generator?: number): DiffieHellman;
+  }
+
   export class KeyAddress {
 
     constructor(bytes: Uint8Array);

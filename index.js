@@ -1,4 +1,5 @@
 const hash = require('./src/hash');
+const dh = require('./src/dh');
 const pki = require('./src/pki');
 const utils = require('./src/utils');
 const cipher = require('./src/cipher');
@@ -15,3 +16,4 @@ for (var key in pki.rsa) { exports[key] = pki.rsa[key]; }
 for (var key in pki) { exports[key] = pki[key]; }
 for (var key in utils) { exports[key] = utils[key]; }
 for (var key in cipher) { exports[key] = cipher[key]; }
+for (var key in dh) { exports[key] = dh[key]; }

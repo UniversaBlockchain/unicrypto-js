@@ -643,6 +643,30 @@ const encrypted = aes256.encrypt(message);   // Uint8Array
 const decrypted = aes256.decrypt(encrypted); // Uint8Array
 ```
 
+### Diffie-Hellman
+
+```js
+import { DiffieHellman } from 'unicrypto';
+
+const primeLength = 1024;
+const generator = 2; // you can omit generator in options, it's 2 by default
+
+const alice = DiffieHellman.generate(primeLength, generator);
+const alicePrime = alice.prime; // base64 string
+const aliceGenerator = alice.generator; // base64 string
+const alicePublic = alice.generateKeys(); // base64 string
+
+// transfer prime, generator and publicKey to bob
+
+const bob = new DiffieHellman(alicePrime, aliceGenerator);
+const bobPublic = bob.generateKeys(); // base64 string
+const bobSecret = bob.computeSecret(alicePublic); // base64 string
+
+// transfer bobPublic back to alice
+
+const aliceSecret = alice.computeSecret(bobPublic); // aliceSecret equals bobSecret
+```
+
 ## Create bundle
 
 Run in package root folder

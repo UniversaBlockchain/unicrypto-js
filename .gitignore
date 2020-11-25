@@ -11,3 +11,4 @@ vendor/*
 .DS_Store
 .nyc_output/
 dist/.DS_Store
+package-lock.json

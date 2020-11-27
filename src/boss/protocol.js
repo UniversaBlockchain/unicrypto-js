@@ -42,7 +42,7 @@ const registry = {
     if (!serializer) return;
     const serialized = serializer.serialize(instance);
 
-    serialized['__t'] = serializer.aliases[0];
+    serialized['__type'] = serializer.aliases[0];
 
     return serialized;
   },

@@ -33,7 +33,7 @@ declare module 'unicrypto' {
 
   export class DiffieHellman {
     secret: string | null;
-    publicKey: string: null;
+    publicKey: string | null;
     prime: string;
     generator: string;
 

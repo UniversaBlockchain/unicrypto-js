@@ -125,6 +125,18 @@ describe('RSA', function() {
       expect(priv.publicKey.getBitStrength()).to.be.equal(2048);
     });
 
+     it('should validate address', async () => {
+      const options = {
+        strength: 2048
+      };
+
+      const priv = await PrivateKey.generate(options);
+      const pub = priv.publicKey;
+
+
+      expect(pub.shortAddress.isValid).to.be.equal(true);
+    });
+
     it('should return encryption max length (1024)', async () => {
       var oaepOpts = {
         seed: seedOAEP.seed,

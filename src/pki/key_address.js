@@ -1,7 +1,7 @@
 const utils = require('../utils');
 const Boss = require('../boss/protocol');
 
-const { encode58 } = utils;
+const { encode58, crc32 } = utils;
 
 class KeyAddress {
   constructor(bytes) {
@@ -10,7 +10,32 @@ class KeyAddress {
 
   get base58() { return encode58(this.bytes); }
 
-  isLong() { return this.bytes.length === 53; }
+  get isValid() {
+    const bytes = this.bytes;
+    const bytesLength = bytes.length;
+
+    if ([37, 53].indexOf(bytesLength) === -1) return false;
+    if ([16, 32].indexOf(bytes[0]) === -1) return false;
+
+    let shaLength = 48;
+    if (bytesLength == 37) shaLength = 32;
+
+    const hashed = bytes.slice(0, 1 + shaLength);
+    let checksum = crc32(hashed);
+
+    if (checksum.length < 4) {
+      const buf = new Uint8Array(new ArrayBuffer(4));
+      buf.set(checksum, 4 - checksum.length);
+      checksum = buf;
+    }
+
+    const decodedPart = bytes.slice(bytesLength - 4, bytesLength);
+    const checksumLast4 = checksum.slice(checksum.length - 4, checksum.length);
+
+    return encode58(checksumLast4) === encode58(new Uint8Array(decodedPart));
+  }
+
+  get isLong() { return this.bytes.length === 53; }
 
   static deserializeFromBOSS(serialized) {
     return new KeyAddress(serialized.uaddress);

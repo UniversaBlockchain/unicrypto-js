@@ -333,6 +333,26 @@ const bossEncoded = await privateKey.pack("somepassword");
 
 AbstractKey.typeOf(bossEncoded) === AbstractKey.TYPE_PRIVATE_PASSWORD_V2 // true
 ```
+### Key Address
+
+```js
+import { PublicKey, KeyAddress } from 'unicrypto';
+
+const pub; // PublicKey instance
+const shortAddress = pub.shortAddress;
+const longAddress = pub.longAddress;
+
+const shortAddressBytes = shortAddress.bytes;
+const shortAddressBase58 = shortAddress.base58;
+
+const address2 = new KeyAddress(shortAddressBytes);
+
+// is adress valid?
+const isValid = address2.isValid;
+
+// is address long?
+const isLong = address2.isLong;
+```
 
 ### KEY INFO
 

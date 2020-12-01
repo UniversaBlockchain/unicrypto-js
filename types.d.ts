@@ -46,13 +46,17 @@ declare module 'unicrypto' {
   }
 
   export class KeyAddress {
-
-    constructor(bytes: Uint8Array);
+    constructor(source: Uint8Array | string);
 
     readonly bytes: Uint8Array;
     readonly base58: string;
+    readonly asBinary: Uint8Array;
+    readonly asString: string;
 
-    isLong(): boolean;
+    static checkAddress(source: Uint8Array | string): boolean;
+
+    isValid: boolean;
+    isLong: boolean;
   }
 
   export class SHA {

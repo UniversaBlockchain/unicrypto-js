@@ -1,18 +1,20 @@
-class Safe58 {
-  static ALPHABET = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
-  static BASE_58 = this.ALPHABET.length;
-  static BASE_256 = 256;
+const ALPHABET = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
 
-  static INDEXES = buildIndexes(this.ALPHABET);
+const Safe58 = {
+  ALPHABET: ALPHABET,
+  BASE_58: ALPHABET.length,
+  BASE_256: 256,
 
-  static copyOfRange(source, from, to) {
+  INDEXES: buildIndexes(ALPHABET),
+
+  copyOfRange: (source, from, to) => {
     const range = [];
     for (let i = from; i < to; i++) range.push(source[i]);
 
     return range;
-  }
+  },
 
-  static divmod58(number, startAt) {
+  divmod58: (number, startAt) => {
     let remainder = 0;
     let number2 = [];
 
@@ -25,9 +27,9 @@ class Safe58 {
     }
 
     return { number: new Uint8Array(number2), remainder };
-  }
+  },
 
-  static divmod256(number58, startAt) {
+  divmod256: (number58, startAt) => {
     let remainder = 0;
     let number2 = [];
 
@@ -40,9 +42,9 @@ class Safe58 {
     }
 
     return { number: new Uint8Array(number2), remainder };
-  }
+  },
 
-  static decode(input, strict = false) {
+  decode: (input, strict = false) => {
     const replaces = {
       'I': '1',
       '!': '1',
@@ -62,9 +64,9 @@ class Safe58 {
     }
 
     return Safe58.doDecode(cleaned);
-  }
+  },
 
-  static doDecode(input) {
+  doDecode: (input) => {
     // paying with the same coin
     if (input.length === 0) return new Uint8Array([0]);
 
@@ -97,9 +99,9 @@ class Safe58 {
     }
 
     return new Uint8Array(Safe58.copyOfRange(temp, j - zeroCount, temp.length));
-  }
+  },
 
-  static encode(input) {
+  encode: (input) => {
     if (input.length === 0) return '';
 
     let inputCopy = [];

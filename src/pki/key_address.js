@@ -1,13 +1,20 @@
 const utils = require('../utils');
 const Boss = require('../boss/protocol');
 
-const { encode58, crc32 } = utils;
+const { encode58, decode58, crc32 } = utils;
 
 class KeyAddress {
   constructor(bytes) {
-    this.bytes = bytes;
+    if (typeof bytes === 'string') this.bytes = decode58(bytes);
+    else this.bytes = bytes;
+
+    if (!this.isValid) throw new Error('key address is invalid');
   }
 
+  get asBinary() { return this.bytes; }
+  get asString() { return encode58(this.bytes); }
+
+  // DEPRECATED
   get base58() { return encode58(this.bytes); }
 
   get isValid() {
@@ -33,6 +40,16 @@ class KeyAddress {
     const checksumLast4 = checksum.slice(checksum.length - 4, checksum.length);
 
     return encode58(checksumLast4) === encode58(new Uint8Array(decodedPart));
+  }
+
+  static checkAddress(src) {
+    try {
+      const addr = new KeyAddress(src);
+
+      return true;
+    } catch (err) {
+      return false;
+    }
   }
 
   get isLong() { return this.bytes.length === 53; }

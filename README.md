@@ -155,7 +155,7 @@ const base64str = encode64(bytes); // String
 const base64ShortString = encode64Short(bytes);
 ```
 
-Convert bytes to base58 and back
+Convert bytes to safe base58 and back
 
 ```js
 import { encode58, decode58 } from 'unicrypto';
@@ -271,13 +271,9 @@ Public key address
 
 ```js
 publicKey.shortAddress.bytes;   // short address (Uint8Array)
-publicKey.shortAddress.base58;   // short address (Uint8Array)
+publicKey.shortAddress.string;   // short address (Uint8Array)
 publicKey.longAddress.bytes;    // long address (Uint8Array)
-publicKey.longAddress.base58;    // long address (Uint8Array)
-
-// DEPRECATED
-publicKey.shortAddress58; // short address (base58)
-publicKey.longAddress58;  // long address (base58)
+publicKey.longAddress.string;    // long address (Uint8Array)
 ```
 
 Check if given address is valid
@@ -290,8 +286,8 @@ PublicKey.isValidAddress(publicKey.shortAddress) // true
 // accepts bytes representation of KeyAddress
 PublicKey.isValidAddress(publicKey.shortAddress.bytes) // true
 
-// accepts base58 representation of address too
-PublicKey.isValidAddress(publicKey.shortAddress58) // true
+// accepts string representation of address too
+PublicKey.isValidAddress(publicKey.shortAddress.string) // true
 
 ```
 
@@ -342,13 +338,16 @@ const pub; // PublicKey instance
 const shortAddress = pub.shortAddress;
 const longAddress = pub.longAddress;
 
-const shortAddressBytes = shortAddress.bytes;
-const shortAddressBase58 = shortAddress.base58;
+const shortAddressBytes = shortAddress.asBinary;
+const shortAddressString = shortAddress.asString;
 
 const address2 = new KeyAddress(shortAddressBytes);
+const address3 = new KeyAddress(shortAddressString);
 
 // is adress valid?
 const isValid = address2.isValid;
+const isValid2 = KeyAddress.checkAddress(shortAddressBytes);
+const isValid3 = KeyAddress.checkAddress(shortAddressString);
 
 // is address long?
 const isLong = address2.isLong;

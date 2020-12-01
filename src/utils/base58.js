@@ -1,109 +1,147 @@
-module.exports = (function() {
-  var ALPHABET, ALPHABET_MAP, Base58, i;
-  ALPHABET = void 0;
-  ALPHABET_MAP = void 0;
-  Base58 = void 0;
-  i = void 0;
-  new Function('x', 'Base58 = x;')(Base58 = {});
-  ALPHABET = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
-  ALPHABET_MAP = {};
-  i = 0;
-  while (i < ALPHABET.length) {
-    ALPHABET_MAP[ALPHABET.charAt(i)] = i;
-    i++;
+class Safe58 {
+  static ALPHABET = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
+  static BASE_58 = this.ALPHABET.length;
+  static BASE_256 = 256;
+
+  static INDEXES = buildIndexes(this.ALPHABET);
+
+  static copyOfRange(source, from, to) {
+    const range = [];
+    for (let i = from; i < to; i++) range.push(source[i]);
+
+    return range;
   }
-  Base58.encode = function(buffer) {
-    var i;
-    var carry, digits, j, l;
-    carry = void 0;
-    digits = void 0;
-    j = void 0;
-    if (buffer.length === 0) {
-      return '';
+
+  static divmod58(number, startAt) {
+    let remainder = 0;
+    let number2 = [];
+
+    for (let i = startAt; i < number.length; i++) {
+      let digit256 = number[i] & 0xFF;
+      let temp = remainder * Safe58.BASE_256 + digit256;
+
+      number2[i] = temp / Safe58.BASE_58;
+      remainder = temp % Safe58.BASE_58;
     }
-    i = void 0;
-    j = void 0;
-    digits = [0];
-    i = 0;
-    while (i < buffer.length) {
-      j = 0;
-      while (j < digits.length) {
-        digits[j] <<= 8;
-        j++;
-      }
-      digits[0] += buffer[i];
-      carry = 0;
-      j = 0;
-      while (j < digits.length) {
-        digits[j] += carry;
-        carry = digits[j] / 58 | 0;
-        digits[j] %= 58;
-        ++j;
-      }
-      while (carry) {
-        digits.push(carry % 58);
-        carry = carry / 58 | 0;
-      }
-      i++;
+
+    return { number: new Uint8Array(number2), remainder };
+  }
+
+  static divmod256(number58, startAt) {
+    let remainder = 0;
+    let number2 = [];
+
+    for (let i = startAt; i < number58.length; i++) {
+      let digit58 = number58[i] & 0xFF;
+      let temp = remainder * Safe58.BASE_58 + digit58;
+
+      number2[i] = temp / Safe58.BASE_256;
+      remainder = temp % Safe58.BASE_256;
     }
-    i = 0;
-    while (buffer[i] === 0 && i < buffer.length - 1) {
-      digits.push(0);
-      i++;
-    }
-    digits.reverse();
-    i = 0;
-    l = digits.length;
-    while (i < l) {
-      digits[i] = ALPHABET.charAt(digits[i]);
-      ++i;
-    }
-    return digits.join('');
-  };
-  Base58.decode = function(string) {
-    var bytes, c, carry, j;
-    bytes = void 0;
-    c = void 0;
-    carry = void 0;
-    j = void 0;
-    if (string.length === 0) {
-      return [];
-    }
-    i = void 0;
-    j = void 0;
-    bytes = [0];
-    i = 0;
-    while (i < string.length) {
-      c = string[i];
-      if (!(c in ALPHABET_MAP)) {
-        throw 'Base58.decode received unacceptable input. Character \'' + c + '\' is not in the Base58 alphabet.';
+
+    return { number: new Uint8Array(number2), remainder };
+  }
+
+  static decode(input, strict = false) {
+    const replaces = {
+      'I': '1',
+      '!': '1',
+      '|': '1',
+      'l': '1',
+      'O': 'o',
+      '0': 'o'
+    };
+
+    let cleaned = input;
+
+    if (!strict) {
+      for (let find in replaces) {
+        let escaped = find.replace(/[.*+\-?^${}()|[\]\\]/g, '\\$&');
+        cleaned = cleaned.replace(new RegExp(escaped, 'g'), replaces[find]);
       }
-      j = 0;
-      while (j < bytes.length) {
-        bytes[j] *= 58;
-        j++;
-      }
-      bytes[0] += ALPHABET_MAP[c];
-      carry = 0;
-      j = 0;
-      while (j < bytes.length) {
-        bytes[j] += carry;
-        carry = bytes[j] >> 8;
-        bytes[j] &= 0xff;
-        ++j;
-      }
-      while (carry) {
-        bytes.push(carry & 0xff);
-        carry >>= 8;
-      }
-      i++;
     }
-    i = 0;
-    while (string[i] === '1' && i < string.length - 1) {
-      bytes.push(0);
-      i++;
+
+    return Safe58.doDecode(cleaned);
+  }
+
+  static doDecode(input) {
+    // paying with the same coin
+    if (input.length === 0) return new Uint8Array([0]);
+
+    let input58 = new Array(input.length);
+
+    for (let i = 0; i < input.length; i++) {
+      let c = input.charCodeAt(i);
+      let digit58 = -1;
+      if (c >= 0 && c < 128) digit58 = Safe58.INDEXES[c];
+      if (digit58 < 0) throw new Error(`Not a Base58 input: ${input}`);
+      input58[i] = digit58;
     }
-    return bytes.reverse();
-  };
-  return Base58;
-}).call(this);
+
+    let zeroCount = 0;
+    while(zeroCount < input58.length && input58[zeroCount] === 0) zeroCount++;
+
+    let temp = new Array(input.length);
+    let j = temp.length;
+    let startAt = zeroCount;
+
+    while (startAt < input58.length) {
+      let { remainder, number } = Safe58.divmod256(input58, startAt);
+      input58 = number;
+      if (input58[startAt] === 0) startAt++;
+      temp[--j] = remainder;
+    }
+
+    while (j < temp.length && temp[j] === 0) {
+      j++;
+    }
+
+    return new Uint8Array(Safe58.copyOfRange(temp, j - zeroCount, temp.length));
+  }
+
+  static encode(input) {
+    if (input.length === 0) return '';
+
+    let inputCopy = [];
+    for (let i = 0; i < input.length; i++) inputCopy[i] = input[i];
+
+    let zeroCount = 0;
+    while(zeroCount < inputCopy.length && inputCopy[zeroCount] === 0) zeroCount++;
+
+    let temp = new Array(input.length * 2);
+    let j = temp.length;
+
+    let startAt = zeroCount;
+    while (startAt < input.length) {
+      const { number, remainder } = Safe58.divmod58(inputCopy, startAt);
+      inputCopy = number;
+      if (inputCopy[startAt] === 0) startAt++;
+      temp[--j] = Safe58.ALPHABET[remainder];
+    }
+
+    while (j < temp.length && temp[j] === Safe58.ALPHABET[0]) {
+      j++;
+    }
+
+    while (--zeroCount >= 0) {
+      temp[--j] = Safe58.ALPHABET[0];
+    }
+
+    // console.log("<<<<", temp);
+
+    let output = Safe58.copyOfRange(temp, j, temp.length);
+    // console.log(output);
+    return output.join('');
+  }
+}
+
+function buildIndexes(alphabet) {
+  const indexes = {};
+
+  for (let i = 0; i < 128; i++) indexes[i] = -1;
+  for (let j = 0; j < alphabet.length; j++) indexes[alphabet.charCodeAt(j)] = j;
+
+  return indexes;
+}
+
+module.exports = Safe58;

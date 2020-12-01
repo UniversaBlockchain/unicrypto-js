@@ -10,7 +10,8 @@ describe('RSA', function() {
     encode64,
     encode58,
     bytesToHex: hex,
-    hexToBytes
+    hexToBytes,
+    KeyAddress
   } = Minicrypto;
 
   const {
@@ -58,6 +59,17 @@ describe('RSA', function() {
     //     console.log(PublicKey.isValidAddress(publicKey.shortAddress58));
     //   }
     // });
+
+    it('should build addresses', async () => {
+      const options = { strength: 2048 };
+      const priv = await PrivateKey.generate(options);
+
+      const short58 = priv.publicKey.shortAddress58;
+
+      const addr = new KeyAddress(short58);
+
+      expect(priv.publicKey.getBitStrength()).to.be.equal(2048);
+    });
 
     it('should pack with password', async () => {
       this.timeout(8000);

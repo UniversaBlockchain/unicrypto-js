@@ -148,10 +148,10 @@ module.exports = class PublicKey extends AbstractKey {
     key.fingerprint(fp => self._fingerprint = new Uint8Array(fp));
 
     if (this.bitStrength > 1024) {
-      this.longAddress = new KeyAddress(new Uint8Array(mapCall(key.getLongAddressBin, key)));
-      this.shortAddress = new KeyAddress(new Uint8Array(mapCall(key.getShortAddressBin, key)));
       this.shortAddress58 = key.getShortAddress58();
       this.longAddress58 = key.getLongAddress58();
+      this.shortAddress = new KeyAddress(this.shortAddress58);
+      this.longAddress = new KeyAddress(this.longAddress58);
     }
 
     if (packed) this._packed = packed;

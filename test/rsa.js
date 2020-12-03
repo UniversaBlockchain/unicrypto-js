@@ -50,15 +50,29 @@ describe('RSA', function() {
       expect(priv.publicKey.getBitStrength()).to.be.equal(2048);
     });
 
-    // it.only('should not create memory leak', async () => {
-    //   for (let i = 0; i < 1000; ++i) {
-    //     const publicKey = (await PrivateKey.generate({strength: 2048})).publicKey;
+    it('should not unpack private key with wrong password', async () => {
+      const k1 = await PrivateKey.generate({strength: 2048});
+      const packed = await k1.pack({password: "1111", rounds: 200});
 
-    //     console.log("i = " + i);
-    //     console.log(PublicKey.isValidAddress(publicKey.shortAddress));
-    //     console.log(PublicKey.isValidAddress(publicKey.shortAddress58));
-    //   }
-    // });
+      try {
+        const k2 = await PrivateKey.unpack(packed, "22222");
+        expect.fail();
+      } catch(err) {
+
+      }
+    });
+
+    it('should not unpack private key without password parameter', async () => {
+      const k1 = await PrivateKey.generate({strength: 2048});
+      const packed = await k1.pack({password: "1111", rounds: 200});
+
+      try {
+        const k2 = await PrivateKey.unpack(packed);
+        expect.fail();
+      } catch(err) {
+
+      }
+    });
 
     it('should build addresses', async () => {
       const options = { strength: 2048 };

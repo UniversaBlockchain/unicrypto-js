@@ -122,8 +122,9 @@ module.exports = class PrivateKey extends AbstractKey {
   }
 
   async pack(options) {
-    const opts = {};
-    if (typeof options === 'string') opts.password = options;
+    let opts = {};
+    if (typeof options === 'string') opts = { password: options };
+    else opts = options;
 
     const key = await this.load();
     const packed = await PrivateKey.packBOSS(Object.assign({ key }, opts));

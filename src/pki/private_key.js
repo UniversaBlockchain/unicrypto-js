@@ -179,11 +179,12 @@ module.exports = class PrivateKey extends AbstractKey {
     await Module.isReady;
 
     return new Promise(resolve => {
-      if (!options.password) return resolve(new Module.PrivateKeyImpl(options));
+      const passwd = options.password || password;
+      if (!passwd) return resolve(new Module.PrivateKeyImpl(options));
 
-      const { bin, password } = options;
+      const bin = options.bin || options;
 
-      Module.PrivateKeyImpl.unpackWithPassword(bin, password, (err, key) => {
+      Module.PrivateKeyImpl.unpackWithPassword(bin, passwd, (err, key) => {
         if (err === "") resolve(key);
         else reject(err);
       });

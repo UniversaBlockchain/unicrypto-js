@@ -96,7 +96,7 @@ describe('RSA', function() {
       expect(fp(key2)).to.equal(fp(key));
     });
 
-    it('should pack with password and iterations', async () => {
+    it('should unpack with password and iterations', async () => {
       this.timeout(8000);
 
       const base64Encoded = seedKeys[2];
@@ -108,6 +108,20 @@ describe('RSA', function() {
         password: "qwerty"
       });
 
+      expect(fp(key2)).to.equal(fp(key));
+    });
+
+    it('should unpack with password and iterations (different signature)', async () => {
+      this.timeout(8000);
+
+      const base64Encoded = seedKeys[2];
+      const key = await PrivateKey.unpack(decode64(base64Encoded));
+      const keyPacked = await key.pack({ password: "qwerty", rounds: 1000 });
+
+      const key2 = await PrivateKey.unpack(
+        keyPacked,
+        "qwerty"
+      );
 
       expect(fp(key2)).to.equal(fp(key));
     });

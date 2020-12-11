@@ -23,7 +23,8 @@ const {
   crc32,
   textToHex,
   hexToBytes,
-  encode64
+  encode64,
+  isBrowser
 } = utils;
 
 const { AESCTRTransformer } = cipher;
@@ -208,13 +209,19 @@ module.exports = class PrivateKey extends AbstractKey {
 
     await Module.isReady;
 
-    const generator = new Promise(resolve => {
-      Module.PrivateKeyImpl.generate(strength, resolve);
-    });
+    if (isBrowser()) {
+      const WorkerFactory = require('../workers');
+      const packed = await WorkerFactory.runTask('PrivateKey.generate', options);
+      return PrivateKey.unpack(packed);
+    } else {
+      const generator = new Promise(resolve => {
+        Module.PrivateKeyImpl.generate(strength, resolve);
+      });
 
-    const key = await generator;
+      const key = await generator;
 
-    return PrivateKey.unpack({ key });
+      return PrivateKey.unpack({ key });
+    }
   }
 }
 

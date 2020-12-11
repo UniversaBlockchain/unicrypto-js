@@ -1,6 +1,6 @@
 {
   "name": "unicrypto",
-  "version": "1.1.10",
+  "version": "1.1.11",
   "description": "Minimalistic Javascript library required to perform basic operations with Universa smart contracts and other objects.",
   "main": "index.js",
   "types": "./types.d.ts",
@@ -8,7 +8,8 @@
     "test": "mocha --timeout 150000",
     "coverage": "nyc npm test",
     "build": "node ./bin/build.js",
-    "postinstall": "node ./bin/postinstall.js"
+    "postinstall": "node ./bin/postinstall.js",
+    "create_worker": "node ./bin/create_worker.js"
   },
   "keywords": [
     "crypt",

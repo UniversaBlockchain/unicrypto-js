@@ -50,6 +50,19 @@ describe('RSA', function() {
       expect(priv.publicKey.getBitStrength()).to.be.equal(2048);
     });
 
+    it.skip('should generate valid keys', async () => {
+      for (let i = 0; i < 1000; i++) {
+        const options = { strength: 2048 };
+        const priv = await PrivateKey.generate(options);
+        console.log(i);
+      }
+    });
+
+    it('should verify address right', async () => {
+      const pubPacked = decode64("HggcAQABxAABs/2qXTrciXy7K1akY97xwGu1W+MMIFfhXk4cr1okvayJb+LhimRzcXKEySW9vZKiDyBr2pOrgi65s+qhTmxwej+Rwg9F1aH0JVqKlyok34W/8xoS3J+h9lAY9TZY+HJkRFViUggajXC8dGJcThl7ww1oG1vkM4u9kBuN9A13ni9lLM/rpsWK4Ryk+l+M7m8XG9aY/abhkj/4o/1hgwZNP6ULHn//PySw0c6tuZoTjmWU0Gx+nchzLMUanm5pH4ubfOr+qK4vMNdh0aGle3hEtfHZaXu0uyFYjxFkpyYHacy6wFrwfTeJHFieFCU2Sz1CVx/hc4rS95uG9hQv1xATXQ==");
+      const pub = await PublicKey.unpack(pubPacked);
+    });
+
     it('should not unpack private key with wrong password', async () => {
       const k1 = await PrivateKey.generate({strength: 2048});
       const packed = await k1.pack({password: "1111", rounds: 200});

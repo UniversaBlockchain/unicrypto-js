@@ -16,7 +16,7 @@ crc32.bytes = (data) => {
 
   var a = [];
 
-  for (var i = hex.length; i >= 0; i -= 2) {
+  for (var i = hex.length; i > 0; i -= 2) {
     var start = i - 2;
     var len = 2;
 

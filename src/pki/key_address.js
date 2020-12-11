@@ -22,7 +22,7 @@ class KeyAddress {
     const bytesLength = bytes.length;
 
     if ([37, 53].indexOf(bytesLength) === -1) return false;
-    if ([16, 32].indexOf(bytes[0]) === -1) return false;
+    if ([16, 32, 48].indexOf(bytes[0]) === -1) return false;
 
     let shaLength = 48;
     if (bytesLength == 37) shaLength = 32;

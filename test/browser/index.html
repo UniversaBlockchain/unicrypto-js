@@ -5,14 +5,10 @@
     <title>Mocha</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="mocha.css">
-    <script src="./crypto.js"></script>
-    <script src="./minicrypto.min.js"></script>
-    <script src="./chai.js"></script>
-    <script src="./mocha.js"></script>
-    <script src="../seed/keys.js"></script>
-    <script src="../seed/custom_salt.js"></script>
-    <script src="../seed/oaep.js"></script>
-    <script src="../seed/pss.js"></script>
+
+    <script src="./crypto.v1.1.11.js"></script>
+    <script src="./unicrypto.js"></script>
+
 
     <!-- <script src="./crypto.js"></script>
     <script src="./minicrypto.min.js"></script> -->
@@ -27,13 +23,54 @@
 
       main();
     </script> -->
+
+    <script>
+      async function main() {
+        setInterval(() => console.log("alive!"), 100);
+        // console.log("START");
+        // const k = await Unicrypto.PrivateKey.gTest({ strength: 4096 });
+        // console.log("AFTER CALL", k);
+        // const worker = new Worker("./worker.js");
+        // worker.onmessage = function(msg) {
+        //   console.log("RECEIVED FROM WORKER", msg);
+
+        //   if (msg.data.type === "init") worker.postMessage({
+        //     command: "PrivateKey.generate",
+        //     options: { strength: 4096 }
+        //   });
+        // };
+
+        // console.log("AFTER CALL");
+        for (let i = 0; i< 15; i++) {
+          // setTimeout(() => )
+          // Unicrypto.PrivateKey.gTest({ strength: 4096 }).then((k) => console.log("done!!!"));
+          // Unicrypto.PrivateKey.generate({ strength: 4096 }).then(k => console.log(k.publicKey.shortAddress.asString));
+
+          var password = 'test';
+          var rounds = 50000;
+          var keyLength = 26;
+          var salt = Unicrypto.decode64('KFuMDXmo');
+          var standard = Unicrypto.decode64('yPsu5qmQto99vDqAMWnldNuagfVl5OhPr6g=');
+
+          Unicrypto.pbkdf2('sha512', {
+            password,
+            salt,
+            rounds,
+            keyLength
+          }).then((res) => console.log("calculated", res));
+          // console.log(k);
+        }
+      }
+      main();
+      // for (let i = 0; i < 1000; i ++) console.log("here");
+    </script>
   </head>
   <body>
     <div id="mocha"></div>
     <script>
-      mocha.setup('bdd');
+      // mocha.setup('bdd');
     </script>
-    <script src="../hash.js"></script>
+<!--     <script src="../hash.js"></script>
     <script src="../pbkdf2.js"></script>
     <script src="../aes.js"></script>
     <script src="../boss.js"></script>
@@ -41,6 +78,6 @@
     <script src="../extended_signature.js"></script>
     <script src="../signed_record.js"></script>
     <script src="../tools.js"></script>
-    <script> mocha.run(); </script>
+    <script> mocha.run(); </script> -->
   </body>
 </html>

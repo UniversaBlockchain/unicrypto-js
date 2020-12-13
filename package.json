@@ -8,7 +8,8 @@
     "test": "mocha --timeout 150000",
     "coverage": "nyc npm test",
     "build": "node ./bin/build.js",
-    "postinstall": "node ./bin/postinstall.js"
+    "postinstall": "node ./bin/postinstall.js",
+    "create_worker": "node ./bin/create_worker.js"
   },
   "keywords": [
     "crypt",

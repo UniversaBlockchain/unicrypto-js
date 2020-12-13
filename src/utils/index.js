@@ -68,6 +68,7 @@ exports.encode64Short = base64.encode64Short;
 exports.decode64Short = base64.decode64Short;
 exports.encode58 = base58.encode;
 exports.decode58 = base58.decode;
+exports.isBrowser = () => typeof window !== 'undefined' && typeof window.document !== 'undefined';
 
 exports.concatBytes = function(a, b) {
   const c = new Uint8Array(a.length + b.length);

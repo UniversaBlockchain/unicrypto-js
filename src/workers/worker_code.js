@@ -1794,13 +1794,8 @@ const SHAStringTypes = {
 };
 
 async function generatePrivateKey(options, callback) {
+  await Module.isReady;
   const { strength } = options;
-
-  try {
-    await Module.isReady;
-  } catch (err) {
-    console.log("WASM LOAD FAILED", err);
-  }
 
   Module.PrivateKeyImpl.generate(strength, (k) => {
     k.pack(bin => callback(bin));
@@ -1808,6 +1803,8 @@ async function generatePrivateKey(options, callback) {
 }
 
 async function pbkdf2(opts, callback) {
+  await Module.isReady;
+
   const { hashStringType, options } = opts;
   const { password, salt, keyLength, rounds } = options;
   const cb = (result) => callback(new Uint8Array(result));

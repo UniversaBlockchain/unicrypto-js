@@ -16,16 +16,36 @@ ENVIRONMENT_IS_WORKER=typeof importScripts==="function";
 ENVIRONMENT_IS_NODE=typeof process==="object"&&typeof process.versions==="object"&&typeof process.versions.node==="string";
 ENVIRONMENT_IS_SHELL=!ENVIRONMENT_IS_WEB&&!ENVIRONMENT_IS_NODE&&!ENVIRONMENT_IS_WORKER;
 var scriptDirectory="";
-function locateFile(path){if(Module["locateFile"]){return Module["locateFile"](path,scriptDirectory)}return scriptDirectory+path}var read_,readAsync,readBinary,setWindowTitle;
+function locateFile(path){
+  if(Module["locateFile"]){
+    return Module["locateFile"](path,scriptDirectory)
+  }
+  return scriptDirectory+path
+}var read_,readAsync,readBinary,setWindowTitle;
 var nodeFS;
 var nodePath;
-if(ENVIRONMENT_IS_NODE){if(ENVIRONMENT_IS_WORKER){scriptDirectory=require("path").dirname(scriptDirectory)+"/"}else{scriptDirectory=__dirname+"/"}read_=function shell_read(filename,binary){if(!nodeFS)nodeFS=require("fs");
-if(!nodePath)nodePath=require("path");
-filename=nodePath["normalize"](filename);
-return nodeFS["readFileSync"](filename,binary?null:"utf8")};
-readBinary=function readBinary(filename){var ret=read_(filename,true);
-if(!ret.buffer){ret=new Uint8Array(ret)}assert(ret.buffer);
-return ret};
+if(ENVIRONMENT_IS_NODE){
+  if(ENVIRONMENT_IS_WORKER){
+    scriptDirectory=require("path").dirname(scriptDirectory)+"/"
+  } else {
+    scriptDirectory=__dirname+"/"
+  }
+  read_=function shell_read(filename,binary){
+    if(!nodeFS)nodeFS=require("fs");
+    if(!nodePath)nodePath=require("path");
+    filename=nodePath["normalize"](filename);
+
+    return nodeFS["readFileSync"](filename,binary?null:"utf8")
+  };
+  readBinary=function readBinary(filename){
+    var ret=read_(filename,true);
+    if(!ret.buffer){
+      ret=new Uint8Array(ret)
+    }
+    assert(ret.buffer);
+
+    return ret
+  };
 if(process["argv"].length>1){thisProgram=process["argv"][1].replace(/\/g,"/")}arguments_=process["argv"].slice(2);
 if(typeof module!=="undefined"){module["exports"]=Module}quit_=function(status){process["exit"](status)};
 Module["inspect"]=function(){return"[Emscripten Module object]"}}else if(ENVIRONMENT_IS_SHELL){if(typeof read!="undefined"){read_=function shell_read(f){return read(f)}}readBinary=function readBinary(f){var data;
@@ -34,7 +54,20 @@ assert(typeof data==="object");
 return data};
 if(typeof scriptArgs!="undefined"){arguments_=scriptArgs}else if(typeof arguments!="undefined"){arguments_=arguments}if(typeof quit==="function"){quit_=function(status){quit(status)}}if(typeof print!=="undefined"){if(typeof console==="undefined")console={};
 console.log=print;
-console.warn=console.error=typeof printErr!=="undefined"?printErr:print}}else if(ENVIRONMENT_IS_WEB||ENVIRONMENT_IS_WORKER){if(ENVIRONMENT_IS_WORKER){scriptDirectory=self.location.href}else if(document.currentScript){scriptDirectory=document.currentScript.src}if(scriptDirectory.indexOf("blob:")!==0){scriptDirectory=scriptDirectory.substr(0,scriptDirectory.lastIndexOf("/")+1)}else{scriptDirectory=""}{read_=function shell_read(url){var xhr=new XMLHttpRequest;
+console.warn=console.error=typeof printErr!=="undefined"?printErr:print}
+}
+
+else if(ENVIRONMENT_IS_WEB||ENVIRONMENT_IS_WORKER) {
+  if(ENVIRONMENT_IS_WORKER) {
+    if (SCRIPT_SRC) scriptDirectory=SCRIPT_SRC;
+    else scriptDirectory=self.location.href
+  } else if(document.currentScript) {
+    scriptDirectory=document.currentScript.src
+  } if(scriptDirectory.indexOf("blob:")!==0) {
+    scriptDirectory=scriptDirectory.substr(0,scriptDirectory.lastIndexOf("/")+1)
+  } else{
+    scriptDirectory=""
+  } {read_=function shell_read(url){var xhr=new XMLHttpRequest;
 xhr.open("GET",url,false);
 xhr.send(null);
 return xhr.responseText};

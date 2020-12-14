@@ -24,7 +24,7 @@ const {
   textToHex,
   hexToBytes,
   encode64,
-  isBrowser
+  isNode
 } = utils;
 
 const { AESCTRTransformer } = cipher;
@@ -207,13 +207,13 @@ module.exports = class PrivateKey extends AbstractKey {
   static async generate(options) {
     const { strength } = options;
 
-    await Module.isReady;
-
-    if (isBrowser()) {
+    if (!isNode()) {
       const WorkerFactory = require('../workers');
       const packed = await WorkerFactory.runTask('PrivateKey.generate', options);
       return PrivateKey.unpack(packed);
     } else {
+      await Module.isReady;
+
       const generator = new Promise(resolve => {
         Module.PrivateKeyImpl.generate(strength, resolve);
       });

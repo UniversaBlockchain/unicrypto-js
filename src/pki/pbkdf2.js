@@ -2,7 +2,7 @@ var Module = Module || require('../vendor/wasm/wrapper');
 
 const SHA = require('../hash/sha');
 
-const { isBrowser } = require('../utils');
+const { isNode } = require('../utils');
 
 module.exports = derive;
 
@@ -27,7 +27,7 @@ async function derive(hashStringType, options) {
 
   await Module.isReady;
 
-  if (isBrowser()) {
+  if (!isNode()) {
     const WorkerFactory = require('../workers');
     return WorkerFactory.runTask('pbkdf2.derive', { hashStringType, options });
   } else return new Promise((resolve, reject) => {

@@ -36,7 +36,7 @@ build(cryptoConfig)
   .then(buildWASM)
   .then(
     () => {
-      fs.copyFileSync(__dirname + '/../dist/unicrypto.min.js', __dirname + '/../test/browser/unicrypto.js');
+      // fs.copyFileSync(__dirname + '/../dist/unicrypto.min.js', __dirname + '/../test/browser/js/unicrypto.js');
       console.log("Done without errors.");
     },
     (err) => console.log(`Done with errors: ${err}`)

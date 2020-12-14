@@ -1,10 +1,11 @@
 const workerCode = require('./worker');
 
 class BrowserWorker {
-  constructor(id) {
+  constructor(id, scriptSRC) {
     this.id = id;
     let updatedCode = `var BASE_URI="${document.baseURI}"; ${workerCode}`;
     updatedCode = `var WORKER_ID=${id}; ${updatedCode}`;
+    if (scriptSRC) updatedCode = `var SCRIPT_SRC="${scriptSRC}"; ${updatedCode}`;
     const blob = new Blob([updatedCode.split("\n").join("\\n")], {type: 'application/javascript'});
     this.worker = new Worker(URL.createObjectURL(blob));
   }
@@ -23,37 +24,41 @@ class WorkerFactory {
     this.tasks = [];
     this.processing = {};
     this.lastTaskId = 1;
+    this.scriptSRC = document.currentScript && document.currentScript.src || '';
+    this.maxWorkers = navigator.hardwareConcurrency - 1;
 
     const self = this;
-    const cores = navigator.hardwareConcurrency;
+    setInterval(() => self.checkTasks(), 100);
+  }
 
-    for (let i = 0; i < cores - 1; i++) {
-      const worker = new BrowserWorker(i);
-      worker.addListener(onMessage);
+  createWorker(i) {
+    const self = this;
+    const worker = new BrowserWorker(i, this.scriptSRC);
+    worker.addListener(onMessage);
 
-      function onMessage(msg) {
-
-        const { type, value, id, taskId } = msg.data;
-        if (type === 'state') self.workers[id].state = value;
-        if (type === 'result') {
-          self.workers[id].state = 'idle';
-          self.processing[taskId].resolve(value);
-          delete self.processing[taskId];
-        }
+    function onMessage(msg) {
+      const { type, value, id, taskId } = msg.data;
+      if (type === 'state') self.workers[id].state = value;
+      if (type === 'result') {
+        self.workers[id].state = 'idle';
+        self.processing[taskId].resolve(value);
+        delete self.processing[taskId];
       }
-
-      this.workers[i] = {
-        worker,
-        id: i,
-        state: 'busy'
-      };
     }
 
-    setInterval(() => self.checkTasks(), 100);
+    this.workers[i] = {
+      worker,
+      id: i,
+      state: 'busy'
+    };
   }
 
   checkTasks() {
     const self = this;
+
+    if (self.tasks.length && Object.keys(this.workers).length === 0)
+      this.createWorker(1);
+
     for (let id in self.workers) {
       const worker = self.workers[id];
       if (worker.state === 'idle' && self.tasks.length) {
@@ -63,6 +68,11 @@ class WorkerFactory {
         worker.worker.runTask(task);
       }
     }
+
+    const workersTotal = Object.keys(this.workers).length;
+
+    if (self.tasks.length && workersTotal < this.maxWorkers)
+      this.createWorker(workersTotal + 1);
   }
 
   addTask(name, options, resolve, reject) {

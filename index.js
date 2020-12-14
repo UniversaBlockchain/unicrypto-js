@@ -5,6 +5,7 @@ const utils = require('./src/utils');
 const cipher = require('./src/cipher');
 const Boss = require('./src/boss/protocol');
 const universa = require('./src/universa');
+const WorkerFactory = require('./src/workers');
 var Module = Module || require('./src/vendor/wasm/wrapper');
 
 exports.isReady = Module.isReady;

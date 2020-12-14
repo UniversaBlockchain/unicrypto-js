@@ -1,10 +1,10 @@
 const workerCode = require('./worker');
+const { isNode } = require('../utils');
 
 class BrowserWorker {
   constructor(id, scriptSRC) {
     this.id = id;
-    let updatedCode = `var BASE_URI="${document.baseURI}"; ${workerCode}`;
-    updatedCode = `var WORKER_ID=${id}; ${updatedCode}`;
+    let updatedCode = `var WORKER_ID=${id}; ${workerCode}`;
     if (scriptSRC) updatedCode = `var SCRIPT_SRC="${scriptSRC}"; ${updatedCode}`;
     const blob = new Blob([updatedCode.split("\n").join("\\n")], {type: 'application/javascript'});
     this.worker = new Worker(URL.createObjectURL(blob));
@@ -20,6 +20,8 @@ class BrowserWorker {
 
 class WorkerFactory {
   constructor() {
+    if (isNode()) return;
+
     this.workers = {};
     this.tasks = [];
     this.processing = {};

@@ -43,7 +43,7 @@ describe('RSA', function() {
   }
 
   describe('key creation', function() {
-    it.only('should generate key pair', async () => {
+    it('should generate key pair', async () => {
       const options = { strength: 2048 };
       const priv = await PrivateKey.generate(options);
 

@@ -12,6 +12,7 @@ const AbstractKey = require('./abstract_key');
 const SymmetricKey = require('./symmetric_key');
 const KeyInfo = require('./key_info');
 const ExtendedSignature = require('./extended_signature');
+const WorkerFactory = require('../workers');
 
 const {
   BigInteger,
@@ -33,11 +34,12 @@ const { ONE: one } = BigInteger;
 const { wrapOptions, getMaxSalt, normalizeOptions } = helpers;
 
 module.exports = class PrivateKey extends AbstractKey {
-  constructor(load, unload) {
+  constructor(load, unload, raw) {
     super();
 
     this.load = load;
     this.unload = unload;
+    this.raw = raw;
     // this.publicKey = PublicKey.fromPrivate(load, unload);
   }
 
@@ -67,19 +69,28 @@ module.exports = class PrivateKey extends AbstractKey {
     let saltLength = -1;
     if (typeof options.saltLength === 'number') saltLength = options.saltLength;
 
-    const key = await this.load();
+    if (!isNode()) {
+      const raw = this.raw;
 
-    return new Promise(resolve => {
-      const cb = res => {
-        self.unload(key);
-        resolve(new Uint8Array(res));
-      }
+      return WorkerFactory.runTask('privateKey.sign', {
+        raw,
+        options: { saltLength, hashType, mgf1Type, data, salt: options.salt }
+      });
+    } else {
+      const key = await this.load();
 
-      if (options.salt)
-        key.signWithCustomSalt(data, hashType, mgf1Type, options.salt, cb);
-      else
-        key.sign(data, hashType, mgf1Type, saltLength, cb);
-    });
+      return new Promise(resolve => {
+        const cb = res => {
+          self.unload(key);
+          resolve(new Uint8Array(res));
+        }
+
+        if (options.salt)
+          key.signWithCustomSalt(data, hashType, mgf1Type, options.salt, cb);
+        else
+          key.sign(data, hashType, mgf1Type, saltLength, cb);
+      });
+    }
   }
 
   async signExtended(data) {
@@ -112,14 +123,24 @@ module.exports = class PrivateKey extends AbstractKey {
   async decrypt(data, options = {}) {
     const self = this;
     const oaepHash = SHA.wasmType(options.oaepHash || 'sha1');
-    const key = await this.load();
 
-    return new Promise(resolve => {
-      key.decrypt(data, oaepHash, (res) => {
-        self.unload(key);
-        resolve(new Uint8Array(res));
+    if (!isNode()) {
+      const raw = this.raw;
+
+      return WorkerFactory.runTask('privateKey.decrypt', {
+        raw,
+        options: { oaepHash, data }
       });
-    });
+    } else {
+      const key = await this.load();
+
+      return new Promise(resolve => {
+        key.decrypt(data, oaepHash, (res) => {
+          self.unload(key);
+          resolve(new Uint8Array(res));
+        });
+      });
+    }
   }
 
   async pack(options) {
@@ -168,7 +189,7 @@ module.exports = class PrivateKey extends AbstractKey {
     const load = () => PrivateKey.unpackBOSS(raw);
     const unload = (key) => key.delete();
 
-    const instance = new PrivateKey(load, unload);
+    const instance = new PrivateKey(load, unload, raw);
     await instance.loadProperties(key);
 
     unload(key);
@@ -208,7 +229,6 @@ module.exports = class PrivateKey extends AbstractKey {
     const { strength } = options;
 
     if (!isNode()) {
-      const WorkerFactory = require('../workers');
       const packed = await WorkerFactory.runTask('PrivateKey.generate', options);
       return PrivateKey.unpack(packed);
     } else {

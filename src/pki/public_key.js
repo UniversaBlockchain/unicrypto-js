@@ -7,6 +7,7 @@ const SHA = require('../hash/sha');
 const { Buffer } = require('buffer');
 const AbstractKey = require('./abstract_key');
 const KeyAddress = require('./key_address');
+const WorkerFactory = require('../workers');
 
 const FINGERPRINT_SHA512 = '07';
 
@@ -22,7 +23,8 @@ const {
   hexToBytes,
   byteStringToArray,
   arrayToByteString,
-  crc32
+  crc32,
+  isNode
 } = utils;
 
 const { wrapOptions, getMaxSalt, normalizeOptions, mapCall } = helpers;
@@ -44,11 +46,12 @@ const transit = {
 };
 
 module.exports = class PublicKey extends AbstractKey {
-  constructor(load, unload) {
+  constructor(load, unload, raw) {
     super();
 
     this.load = load;
     this.unload = unload;
+    this.raw = raw;
   }
 
   async verify(data, signature, options) {
@@ -59,16 +62,25 @@ module.exports = class PublicKey extends AbstractKey {
     if (typeof options.saltLength === 'number') saltLength = options.saltLength;
     if (options.salt) saltLength = options.salt.length;
 
-    const key = await this.load();
+    if (!isNode()) {
+      const raw = this.raw;
 
-    return new Promise(resolve => {
-      const cb = (result) => {
-        self.unload(key);
-        resolve(result);
-      }
+      return WorkerFactory.runTask('publicKey.verify', {
+        raw,
+        options: { saltLength, hashType, mgf1Type, data, salt: options.salt, signature }
+      });
+    } else {
+      const key = await this.load();
 
-      key.verify(data, signature, hashType, mgf1Type, saltLength, cb);
-    });
+      return new Promise(resolve => {
+        const cb = (result) => {
+          self.unload(key);
+          resolve(result);
+        }
+
+        key.verify(data, signature, hashType, mgf1Type, saltLength, cb);
+      });
+    }
   }
 
   async verifyExtended(signature, data) {
@@ -95,17 +107,26 @@ module.exports = class PublicKey extends AbstractKey {
     const self = this;
     const hashType = SHA.wasmType(oaepHash || 'sha1');
 
-    const key = await this.load();
+    if (!isNode()) {
+      const raw = this.raw;
 
-    return new Promise(resolve => {
-      const cb = res => {
-        self.unload(key);
-        resolve(new Uint8Array(res));
-      }
+      return WorkerFactory.runTask('publicKey.encrypt', {
+        raw,
+        options: { hashType, data, seed }
+      });
+    } else {
+      const key = await this.load();
 
-      if (seed) key.encryptWithSeed(data, hashType, seed, cb);
-      else key.encrypt(data, hashType, cb);
-    });
+      return new Promise(resolve => {
+        const cb = res => {
+          self.unload(key);
+          resolve(new Uint8Array(res));
+        }
+
+        if (seed) key.encryptWithSeed(data, hashType, seed, cb);
+        else key.encrypt(data, hashType, cb);
+      });
+    }
   }
 
   get fingerprint() {
@@ -167,7 +188,7 @@ module.exports = class PublicKey extends AbstractKey {
     const load = () => PublicKey.unpackBOSS(options);
     const unload = (key) => key.delete();
 
-    const instance = new PublicKey(load, unload);
+    const instance = new PublicKey(load, unload, packed);
     await instance.loadProperties(key, options);
 
     unload(key);
@@ -205,7 +226,7 @@ module.exports = class PublicKey extends AbstractKey {
     const load = () => PublicKey.unpackBOSS(packed);
     const unload = (key) => key.delete();
 
-    const instance = new PublicKey(load, unload);
+    const instance = new PublicKey(load, unload, packed);
     await instance.loadProperties(key, packed);
 
     unload(key);

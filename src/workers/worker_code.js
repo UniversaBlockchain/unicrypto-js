@@ -1825,6 +1825,58 @@ const SHAStringTypes = {
   "sha3_512": 5
 };
 
+async function privateKeySign(opts, callback) {
+  await Module.isReady;
+
+  const { options, raw } = opts;
+  const { data, hashType, mgf1Type, saltLength } = options;
+
+  const key = new Module.PrivateKeyImpl(raw);
+  const cb = (result) => callback(new Uint8Array(result));
+
+  if (options.salt)
+    key.signWithCustomSalt(data, hashType, mgf1Type, options.salt, cb);
+  else
+    key.sign(data, hashType, mgf1Type, saltLength, cb);
+}
+
+async function publicKeyVerify(opts, callback) {
+  await Module.isReady;
+
+  const { options, raw } = opts;
+  const { data, hashType, mgf1Type, saltLength, signature } = options;
+
+  Module.PublicKeyImpl.initFromPackedBinary(raw, (key) => {
+    key.verify(data, signature, hashType, mgf1Type, saltLength, callback);
+  });
+}
+
+async function privateKeyDecrypt(opts, callback) {
+  await Module.isReady;
+
+  const { options, raw } = opts;
+  const { data, oaepHash } = options;
+
+  const key = new Module.PrivateKeyImpl(raw);
+  const cb = (result) => callback(new Uint8Array(result));
+
+  key.decrypt(data, oaepHash, cb);
+}
+
+async function publicKeyEncrypt(opts, callback) {
+  await Module.isReady;
+
+  const { options, raw } = opts;
+  const { data, hashType, seed } = options;
+
+  const cb = (result) => callback(new Uint8Array(result));
+
+  Module.PublicKeyImpl.initFromPackedBinary(raw, (key) => {
+    if (seed) key.encryptWithSeed(data, hashType, seed, cb);
+    else key.encrypt(data, hashType, cb);
+  });
+}
+
 async function generatePrivateKey(options, callback) {
   await Module.isReady;
   const { strength } = options;
@@ -1848,13 +1900,16 @@ onmessage = function(msg) {
   const { data } = msg;
   const { command, options, taskId } = data;
 
-  if (command === 'PrivateKey.generate') generatePrivateKey(options, (bin) => {
-    postMessage({ type: 'result', taskId, value: bin, id: WORKER_ID });
-  });
+  const cb = (value) => {
+    postMessage({ type: 'result', taskId, value, id: WORKER_ID });
+  };
 
-  if (command === 'pbkdf2.derive')  pbkdf2(options, (bin) => {
-    postMessage({ type: 'result', taskId, value: bin, id: WORKER_ID });
-  });
+  if (command === 'PrivateKey.generate') generatePrivateKey(options, cb);
+  if (command === 'pbkdf2.derive')  pbkdf2(options, cb);
+  if (command === 'privateKey.sign') privateKeySign(options, cb);
+  if (command === 'privateKey.decrypt') privateKeyDecrypt(options, cb);
+  if (command === 'publicKey.verify') publicKeyVerify(options, cb);
+  if (command === 'publicKey.encrypt') publicKeyEncrypt(options, cb);
 };
 
 postMessage({

@@ -185,6 +185,8 @@ module.exports = class PublicKey extends AbstractKey {
     if (options.n && options.e) key = await PublicKey.unpackExponents(options);
     else key = await PublicKey.unpackBOSS(options);
 
+    const packed = await PublicKey.packBOSS(key);
+
     const load = () => PublicKey.unpackBOSS(options);
     const unload = (key) => key.delete();
 

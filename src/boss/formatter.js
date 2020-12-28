@@ -133,7 +133,7 @@ module.exports = class Formatter {
     }
 
     function classifyByConstructorName() {
-      const constructorName = value.constructor.name;
+      const constructorName = value.constructor.className || value.constructor.name;
 
       const serializedInstance = self.registry.serialize(constructorName, value);
 

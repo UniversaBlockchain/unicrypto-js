@@ -324,7 +324,6 @@ function getBinaryPromise(){
   if(!wasmBinary&&(ENVIRONMENT_IS_WEB||ENVIRONMENT_IS_WORKER)&&typeof fetch==="function") {
     let wasmbinurl = wasmBinaryFile;
 
-    console.log("WASM URI", wasmbinurl);
     return fetch(wasmbinurl,{credentials:"same-origin"}).then(function(response){
       if(!response["ok"]){
         throw"failed to load wasm binary file at '"+wasmBinaryFile+"'"
@@ -352,7 +351,6 @@ function instantiateAsync(){
   if(!wasmBinary&&typeof WebAssembly.instantiateStreaming==="function"&&!isDataURI(wasmBinaryFile)&&typeof fetch==="function"){
     let wasmbinurl = wasmBinaryFile;
 
-    console.log("WASM URI", wasmbinurl);
     fetch(wasmbinurl,{credentials:"same-origin"}).then(function(response){
       var result=WebAssembly.instantiateStreaming(response,info);
       return result.then(receiveInstantiatedSource,function(reason){

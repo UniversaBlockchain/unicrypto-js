@@ -36,8 +36,7 @@ const registry = {
     this.constructors[alias] = (serialized) => deserializeBOSS(serialized);
   },
   serialize: function(constructorName, instance) {
-    const name = instance.constructor.name;
-    const serializer = this.serializers[name];
+    const serializer = this.serializers[constructorName];
 
     if (!serializer) return;
     const serialized = serializer.serialize(instance);

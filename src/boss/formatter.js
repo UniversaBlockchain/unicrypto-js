@@ -132,6 +132,15 @@ module.exports = class Formatter {
       return self;
     }
 
+    function writeMap(value) {
+      self.writeHeader(DICT, value.size);
+
+      for(let entry of value) {
+        self.put(entry[0]);
+        self.put(entry[1]);
+      }
+    }
+
     function classifyByConstructorName() {
       const constructorName = value.constructor.className || value.constructor.name;
 
@@ -148,6 +157,7 @@ module.exports = class Formatter {
         case 'Date': return writeDate(value);
         case 'Array': return writeArray(value);
         case 'Object': return writeObject(value);
+        case 'Map': return writeMap(value);
         default: return classifyByInstance();
       }
     }
@@ -160,6 +170,7 @@ module.exports = class Formatter {
       if (value instanceof Boolean) return writeBoolean(value);
       if (value instanceof Date) return writeDate(value);
       if (value instanceof Array) return writeArray(value);
+      if (value instanceof Map) return writeMap(value);
       if (value instanceof Object) return writeObject(value);
 
       const errName = constructorName || "without constructor name";

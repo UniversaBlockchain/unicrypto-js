@@ -114,19 +114,52 @@ module.exports = class Parser {
         this.cacheObject({});
         const dictIndex = this.cache.length - 1;
 
-        for (let i = 0; i < value; i++) {
-          const key = this.get();
-          const value = this.get();
+        let isMap = false;
+        let i = 0;
+        let map;
+        let mapKey;
+        let mapValue;
 
-          dictionary[key] = value;
+        while (i < value && !isMap) {
+          mapKey = this.get();
+          mapValue = this.get();
+
+          if (['object', 'function'].indexOf(typeof mapKey) !== -1 &&
+            ['Number', 'String'].indexOf(mapKey.constructor.name) === -1) {
+            isMap = true;
+          } else dictionary[mapKey] = mapValue;
+
+          i++;
         }
 
-        instance = this.registry.deserialize(dictionary);
-        if (!instance) instance = dictionary;
+        if (isMap) {
+          map = new Map();
 
-        this.cache[dictIndex] = instance;
+          for (let k in dictionary) {
+            map.set(k, dictionary[k]);
+          }
 
-        return instance;
+          map.set(mapKey, mapValue);
+
+          while (i < value) {
+            mapKey = this.get();
+            mapValue = this.get();
+
+            map.set(mapKey, mapValue);
+            i++;
+          }
+
+          this.cache[dictIndex] = map;
+
+          return map;
+        } else {
+          instance = this.registry.deserialize(dictionary);
+          if (!instance) instance = dictionary;
+
+          this.cache[dictIndex] = instance;
+
+          return instance;
+        }
       case CREF:
         return this.cache[value];
       default:

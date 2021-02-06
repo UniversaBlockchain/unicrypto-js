@@ -270,6 +270,27 @@ describe('BOSS Protocol', function() {
     expect(obj["a"]).to.equal("1");
   });
 
+  it('should pack Map', function() {
+    const map = new Map();
+    const a = { c: 1 };
+
+    map.set("k1", 1);
+    map.set("k2", 2);
+    map.set(a, 3);
+
+    const packed = Boss.dump(map);
+    const loaded = Boss.load(packed);
+
+    expect(loaded.get("k2")).to.be.equal(2);
+  });
+
+  it('should unpack Map', function() {
+    const bin = decode64("H4NlbmNyeXB0ZWRQYXlsb2FkxF4Cuxzgeaxa+BEjWtpyQNy1DdsomdNOkTKm8ryRO7k1nn2b6U6ldvOp/jQa9cKrwjqSF5A5n4WjMWD09pSIfKdyzvwZ1dPNmAB3o8jWJPyIPg8lGp8VBkm7TVzofV3KqmmN8XsQ6uCnEq9eG2rik7wpWrXeGHRe2MxvKvhNgyi2/Skpj8+L4tGvO1przlYAaDZ1OhBqty4VWp7wsGbeTKH7X5jXRGdESgXb9njRJvCmn4kY80i5Lg25nZGjn999/31gnMd2TKwQp3KCUaBfbpqcoGBqgXbYu/hF+mVYDKUVGv4ZXYIM+hCR+SrHGQRrMjebMoA7jEtOM/CovHZvMbSPnnChMwxGVrs6ofc+0cJe8OnJqw0GQGadaL0VykEMFHhwhbqsPIucMV3S4n3g5UWatEiA6jn9hIuWXKnw5ljxnHwtaJMsD+abxpAnA4kBZJNQb1FqpuVUknmhCB60hisIjVZr3WxbM+vm+fU/JtaGke3rqCjlzC1xMyULW6sUxG/2/I/PV0xwbSnOCkkgdTddJJY4k+XLFcxw1gKzzKMQCs+SRPOdRQZM2dM8tkToFPCQYKAO9IhrqyaEyJeJ9A2w4ITWxftbgBgp9oHRlnSOVyw6ShJ7HdTpx7dC5W1secqUlFnhVaZJUCczIR5a0unx6JKNqU3idxkkzB4ipA8u+33Z0YRif8oWJVEjHiOdlRSfEKBzg42pkjMUkNEJvDsdSNlma4jfJmT/7e/+1vSOT0IDXzBn6xl60M8s8fDuzgyWucgLsfXzTL+37Zf2mmZrKTDJhFLGNstq4fwEE4byCyRLU2hhcmVkQm94e3BhY2tlZEFjY2Vzc29ycw9HS2tleUxlbmd0aLggI3NhbHR8bXlvLmNsb3VkLmxvZ2luJatQYXNzd29yZEtleUFubm90YXRpb24zZGlnZXN0DyNuYW1lM1NIQTI1NlNmdWxsTGVuZ3RouGATaWS8IGpmiLRmmhRoBzuuH+7Ou8lR5o97qhA6nOHsfiOY5gSaS2tleU9mZnNldAAzcm91bmRzyPBJArxQ2++Qq5jOy6uEsqzivMncSkkZwqBj81kpxvDCTw8Y6yAcXjkQjQNp8Plcbx10FOQfbb8RF8a/91+Aohp91dk6bezefW7fL03s6D3MG4ZFgho=");
+    const loaded = Boss.load(bin);
+
+    expect(loaded.packedAccessors.constructor.name).to.be.equal('Map');
+  });
+
   function round(value) {
     expect(value).to.deep.equal(Boss.load(Boss.dump(value)));
   }

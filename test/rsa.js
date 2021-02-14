@@ -487,6 +487,14 @@ describe('RSA', function() {
 
       expect(symmetricKey3 instanceof SymmetricKey).to.equal(true);
     });
+
+    it('should pack to uint8array', async () => {
+      const sk = new SymmetricKey();
+      const packed = sk.pack();
+
+      expect(packed instanceof Uint8Array).to.equal(true);
+      expect(packed.constructor.name).to.equal('Uint8Array');
+    });
   });
 
   describe('Abstract key', function() {

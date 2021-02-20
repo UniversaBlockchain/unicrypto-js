@@ -1813,7 +1813,7 @@ run();
 Module.isReady = new Promise(resolve => {
   Module.onRuntimeInitialized = () => {
     Module.isInitialized = true;
-    resolve();
+    resolve(true);
   };
 });
 

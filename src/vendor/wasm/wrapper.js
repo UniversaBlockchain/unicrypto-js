@@ -2,7 +2,7 @@ var Module=typeof Module!=="undefined"?Module:{};var moduleOverrides={};var key;
 Module.isReady = new Promise(resolve => {
   Module.onRuntimeInitialized = () => {
     Module.isInitialized = true;
-    resolve();
+    resolve(true);
   };
 });
 module.exports = Module;

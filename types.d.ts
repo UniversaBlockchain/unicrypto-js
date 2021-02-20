@@ -64,16 +64,21 @@ declare module 'unicrypto' {
 
     get(encoding?: string): Promise<Uint8Array>;
     get(data?: Uint8Array, encoding?: string): Promise<Uint8Array>;
+    getSync(encoding?: string): Uint8Array;
+    getSync(data?: Uint8Array, encoding?: string): Uint8Array;
     put(data: Uint8Array): Promise<void>;
+    putSync(data: Uint8Array): void;
     delete(): Promise<void>;
 
     static getDigest(sha: SHAStringType, data: Uint8Array): Promise<Uint8Array>;
+    static getDigestSync(sha: SHAStringType, data: Uint8Array): Uint8Array;
   }
 
   export class HMAC {
     constructor(sha: SHAStringType, key: Uint8Array);
 
-    put(data: Uint8Array): Promise<void>;
+    get(data?: Uint8Array): Promise<Uint8Array>;
+    getSync(data?: Uint8Array): Uint8Array;
   }
 
   export class AbstractKey {
@@ -256,6 +261,8 @@ declare module 'unicrypto' {
     decrypt(data: Uint8Array): Uint8Array;
     etaEncrypt(data: Uint8Array): Promise<Uint8Array>;
     etaDecrypt(data: Uint8Array): Promise<Uint8Array>;
+    etaEncryptSync(data: Uint8Array): Uint8Array;
+    etaDecryptSync(data: Uint8Array): Uint8Array;
 
     static fromPassword(password: string, rounds: number, salt?: Uint8Array): Promise<SymmetricKey>;
   }
@@ -266,4 +273,6 @@ declare module 'unicrypto' {
     encrypt(data: Uint8Array): Uint8Array;
     decrypt(data: Uint8Array): Uint8Array;
   }
+
+  let unicryptoReady: Promise<boolean>;
 }

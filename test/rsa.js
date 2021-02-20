@@ -11,7 +11,8 @@ describe('RSA', function() {
     encode58,
     bytesToHex: hex,
     hexToBytes,
-    KeyAddress
+    KeyAddress,
+    unicryptoReady
   } = Minicrypto;
 
   const {
@@ -466,6 +467,22 @@ describe('RSA', function() {
       expect(hex(seedPSS.message)).to.equal(hex(decrypted2));
     });
 
+    it('should create random symmetric key (sync)', async () => {
+      await unicryptoReady;
+
+      const symmetricKey = new SymmetricKey();
+
+      const encrypted = symmetricKey.encrypt(seedPSS.message);
+      const decrypted = symmetricKey.decrypt(encrypted);
+
+      expect(hex(seedPSS.message)).to.equal(hex(decrypted));
+
+      const encrypted2 = symmetricKey.etaEncryptSync(seedPSS.message);
+      const decrypted2 = symmetricKey.etaDecryptSync(encrypted2);
+
+      expect(hex(seedPSS.message)).to.equal(hex(decrypted2));
+    });
+
     it('should pack key as is', async() => {
       const keyBytes = decode64("/bbMv7MMsbsWSi4Abujd/1nije6QADJeuqxAKyCg+gY=");
       const symmetricKey = new SymmetricKey({ keyBytes });
@@ -477,6 +494,24 @@ describe('RSA', function() {
 
       const encrypted2 = await symmetricKey.etaEncrypt(seedPSS.message);
       const decrypted2 = await symmetricKey.etaDecrypt(encrypted2);
+
+      expect(hex(seedPSS.message)).to.equal(hex(decrypted2));
+      expect(encode64(symmetricKey.pack())).to.equal(encode64(keyBytes));
+    });
+
+    it('should pack key as is (sync)', async() => {
+      await unicryptoReady;
+
+      const keyBytes = decode64("/bbMv7MMsbsWSi4Abujd/1nije6QADJeuqxAKyCg+gY=");
+      const symmetricKey = new SymmetricKey({ keyBytes });
+
+      const encrypted = symmetricKey.encrypt(seedPSS.message);
+      const decrypted = symmetricKey.decrypt(encrypted);
+
+      expect(hex(seedPSS.message)).to.equal(hex(decrypted));
+
+      const encrypted2 = symmetricKey.etaEncryptSync(seedPSS.message);
+      const decrypted2 = symmetricKey.etaDecryptSync(encrypted2);
 
       expect(hex(seedPSS.message)).to.equal(hex(decrypted2));
       expect(encode64(symmetricKey.pack())).to.equal(encode64(keyBytes));

@@ -60,7 +60,7 @@ declare module 'unicrypto' {
   }
 
   export class SHA {
-    constructor(size: string | number);
+    constructor(size: SHAStringType | number);
 
     get(encoding?: string): Promise<Uint8Array>;
     get(data?: Uint8Array, encoding?: string): Promise<Uint8Array>;

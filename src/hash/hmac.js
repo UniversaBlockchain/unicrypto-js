@@ -24,6 +24,18 @@ class HMAC {
       });
     });
   }
+
+  getSync(data) {
+    const self = this;
+
+    let digest;
+
+    Module.calcHmac(self.hashType, self.key, data, res => {
+      digest = new Uint8Array(res);
+    });
+
+    return digest;
+  }
 }
 
 module.exports = HMAC;

@@ -86,6 +86,26 @@ class SymmetricKey {
 
     return concatBytes(encrypted, hmacDigest);
   }
+
+  etaDecryptSync(encrypted) {
+    const encryptedLength = encrypted.length;
+    const hmac = new HMAC('sha256', this.keyBytes);
+    const transformed = encrypted.slice(IVSize, encryptedLength - 32);
+    const hmacCalculated = hmac.getSync(transformed);
+    const hmacGiven = encrypted.slice(encryptedLength - 32, encryptedLength);
+    if (encode64(hmacCalculated) !== encode64(hmacGiven))
+      throw new Error("hmac digest doesn't match");
+
+    return this.decrypt(encrypted.slice(0, encryptedLength - 32));
+  }
+
+  etaEncryptSync(data) {
+    const hmac = new HMAC('sha256', this.keyBytes);
+    const encrypted = this.encrypt(data);
+    const hmacDigest = hmac.getSync(encrypted.slice(IVSize, encrypted.length));
+
+    return concatBytes(encrypted, hmacDigest);
+  }
 }
 
 module.exports = SymmetricKey;

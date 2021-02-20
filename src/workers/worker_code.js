@@ -1810,9 +1810,12 @@ if(Module["noInitialRun"])shouldRunNow=false;
 noExitRuntime=true;
 run();
 
-Module.isReady = new Promise(resolve => { Module.onRuntimeInitialized = resolve;
- });
-
+Module.isReady = new Promise(resolve => {
+  Module.onRuntimeInitialized = () => {
+    Module.isInitialized = true;
+    resolve();
+  };
+});
 
 const SHAStringTypes = {
   "sha1": 0,

@@ -21,11 +21,11 @@ class SHA {
     this.hash = null;
   }
 
-  getSync() {
+  getInstance() {
     return new Module.DigestImpl(this.wasmType);
   }
 
-  async delete() {
+  delete() {
     this.hash.delete();
   }
 
@@ -35,8 +35,18 @@ class SHA {
     return this.hash.update(data);
   }
 
+  updateSync(data) {
+    this.initSync();
+    this.empty = false;
+    return this.hash.update(data);
+  }
+
   async put(data) {
     return this.update(data);
+  }
+
+  putSync(data) {
+    this.updateSync(data);
   }
 
   async doFinal() {
@@ -44,8 +54,13 @@ class SHA {
     this.hash.doFinal();
   }
 
+  doFinalSync() {
+    this.initSync();
+    this.hash.doFinal();
+  }
+
   getDigestSize() {
-    const instance = this.getSync();
+    const instance = this.getInstance();
     const size = instance.getDigestSize();
     instance.delete();
 
@@ -64,7 +79,23 @@ class SHA {
       });
     });
 
-    await this.delete();
+    this.delete();
+
+    return digest;
+  }
+
+  getDigestSync(encoding) {
+    this.initSync();
+    const hash = this.hash;
+    let digest;
+
+    hash.getDigest(res => {
+      const bytes = new Uint8Array(res);
+      if (encoding === 'hex') digest = bytesToHex(bytes);
+      else digest = bytes;
+    });
+
+    this.delete();
 
     return digest;
   }
@@ -77,6 +108,16 @@ class SHA {
     await this.doFinal();
 
     return this.getDigest(encoding);
+  }
+
+  getSync(data, encoding) {
+    if ((typeof data !== 'string' && data) || this.empty)
+      this.updateSync(data);
+    else encoding = data;
+
+    this.doFinalSync();
+
+    return this.getDigestSync(encoding);
   }
 
   static async hashId(data) {
@@ -103,13 +144,25 @@ class SHA {
 
     await Module.isReady;
 
-    if (!this.hash) this.hash = await new Module.DigestImpl(this.wasmType);
+    if (!this.hash) this.hash = new Module.DigestImpl(this.wasmType);
+  }
+
+  initSync(wasmType) {
+    if (this.hash) return;
+    this.hash = new Module.DigestImpl(this.wasmType);
   }
 
   static async getDigest(hashType, data) {
     const sha = new SHA(hashType);
 
     return sha.get(data);
+  }
+
+  static getDigestSync(hashType, data) {
+    if (!Module.isInitialized) throw new Error('unicrypto is not ready');
+    const sha = new SHA(hashType);
+
+    return sha.getSync(data);
   }
 }
 

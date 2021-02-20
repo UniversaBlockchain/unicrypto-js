@@ -11,7 +11,8 @@ describe('Hash', function() {
     hexToBytes,
     bytesToHex,
     encode64,
-    decode64
+    decode64,
+    unicryptoReady
   } = Minicrypto;
 
   const { SHA, HMAC } = Minicrypto;
@@ -66,6 +67,16 @@ describe('Hash', function() {
 
         expect(bytesToHex(digest)).to.equal(hashFor[msg]);
       });
+
+      it('should calculate hash sync', async () => {
+        await unicryptoReady;
+
+        var msg = 'one';
+
+        const digest = SHA.getDigestSync('sha256', textToBytes(msg));
+
+        expect(bytesToHex(digest)).to.equal(hashFor[msg]);
+      });
     });
 
     describe('SHA512', function() {
@@ -93,6 +104,15 @@ describe('Hash', function() {
         await sha512.put(textToBytes('two'));
 
         expect(await sha512.get('hex')).to.equal(hashFor['onetwo']);
+      });
+
+      it('should calculate hash for message "onetwo" divided by parts sync', async () => {
+        await unicryptoReady;
+
+        sha512.putSync(textToBytes('one'));
+        sha512.putSync(textToBytes('two'));
+
+        expect(sha512.getSync('hex')).to.equal(hashFor['onetwo']);
       });
     });
 
@@ -128,6 +148,16 @@ describe('Hash', function() {
       var hmac = new HMAC('sha256', key);
 
       expect(encode64(await hmac.get(data))).to.equal('la3Xl78Z3ktK2JLoDpPKthhqVilUX6+e6a0WultI9f8=');
+    });
+
+    it('should calculate hash for message and key sync', async () => {
+      await unicryptoReady;
+
+      var data = textToBytes('a quick brown for his done something disgusting');
+      var key = textToBytes('1234567890abcdef1234567890abcdef');
+      var hmac = new HMAC('sha256', key);
+
+      expect(encode64(hmac.getSync(data))).to.equal('la3Xl78Z3ktK2JLoDpPKthhqVilUX6+e6a0WultI9f8=');
     });
 
     it('should calculate hash for larg data', async () => {

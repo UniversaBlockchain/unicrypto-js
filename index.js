@@ -1,3 +1,5 @@
+var Module = Module || require('./src/vendor/wasm/wrapper');
+
 const hash = require('./src/hash');
 const dh = require('./src/dh');
 const pki = require('./src/pki');
@@ -6,9 +8,8 @@ const cipher = require('./src/cipher');
 const Boss = require('./src/boss/protocol');
 const universa = require('./src/universa');
 const WorkerFactory = require('./src/workers');
-var Module = Module || require('./src/vendor/wasm/wrapper');
 
-exports.isReady = Module.isReady;
+exports.unicryptoReady = Module.isReady;
 exports.Boss = Boss;
 
 for (var key in universa) { exports[key] = universa[key]; }

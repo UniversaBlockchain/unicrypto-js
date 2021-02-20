@@ -200,16 +200,49 @@ const sha256 = new SHA(256);
 const hexResult = await sha256.get(textToBytes("one two three"), 'hex'); // String
 ```
 
+Sync usage
+
+```js
+import { SHA, universaReady } from 'unicrypto';
+
+await universaReady;
+
+const resultBytes1 = SHA.getDigestSync('sha256', textToBytes('somevalue')); // Uint8Array
+
+const sha512 = new SHA(512);
+
+await sha512.putSync(dataPart1); // dataPart1 is Uint8Array
+await sha512.putSync(dataPart2);
+// .....
+await sha512.putSync(dataPartFinal);
+
+const resultBytes = await sha512.getSync();
+```
+
 ### HMAC
 
 ```js
-import { SHA, HMAC  } from 'unicrypto';
+import { HMAC  } from 'unicrypto';
 
 const data = textToBytes('a quick brown for his done something disgusting');
 const key = textToBytes('1234567890abcdef1234567890abcdef');
 
 const hmac = new HMAC('sha256', key);
 const result = await hmac.get(data) // Uint8Array
+```
+
+Sync usage
+
+```js
+import { HMAC, universaReady  } from 'unicrypto';
+
+await universaReady;
+
+const data = textToBytes('a quick brown for his done something disgusting');
+const key = textToBytes('1234567890abcdef1234567890abcdef');
+
+const hmac = new HMAC('sha256', key);
+const result = hmac.getSync(data) // Uint8Array
 ```
 
 ### PBKDF2
@@ -452,6 +485,19 @@ Encrypt / decrypt data with EtA using Sha256-based HMAC
 // data is Uint8Array
 const encrypted = await symmetricKey.etaEncrypt(data); // Uint8Array
 const decrypted = await symmetricKey.etaDecrypt(encrypted); // Uint8Array
+```
+
+Sync usage
+```js
+import { SymmetricKey, universaReady } from 'unicrypto';
+
+await universaReady;
+// Creates random key (AES256, CTR)
+const symmetricKey = new SymmetricKey();
+
+// data is Uint8Array
+const encrypted = symmetricKey.etaEncryptSync(data); // Uint8Array
+const decrypted = symmetricKey.etaDecryptSync(encrypted); // Uint8Array
 ```
 
 ### RSA OAEP/PSS

@@ -203,20 +203,20 @@ const hexResult = await sha256.get(textToBytes("one two three"), 'hex'); // Stri
 Sync usage
 
 ```js
-import { SHA, universaReady } from 'unicrypto';
+import { SHA, unicryptoReady } from 'unicrypto';
 
-await universaReady;
+await unicryptoReady;
 
 const resultBytes1 = SHA.getDigestSync('sha256', textToBytes('somevalue')); // Uint8Array
 
 const sha512 = new SHA(512);
 
-await sha512.putSync(dataPart1); // dataPart1 is Uint8Array
-await sha512.putSync(dataPart2);
+sha512.putSync(dataPart1); // dataPart1 is Uint8Array
+sha512.putSync(dataPart2);
 // .....
-await sha512.putSync(dataPartFinal);
+sha512.putSync(dataPartFinal);
 
-const resultBytes = await sha512.getSync();
+const resultBytes = sha512.getSync();
 ```
 
 ### HMAC
@@ -234,9 +234,9 @@ const result = await hmac.get(data) // Uint8Array
 Sync usage
 
 ```js
-import { HMAC, universaReady  } from 'unicrypto';
+import { HMAC, unicryptoReady  } from 'unicrypto';
 
-await universaReady;
+await unicryptoReady;
 
 const data = textToBytes('a quick brown for his done something disgusting');
 const key = textToBytes('1234567890abcdef1234567890abcdef');
@@ -489,9 +489,9 @@ const decrypted = await symmetricKey.etaDecrypt(encrypted); // Uint8Array
 
 Sync usage
 ```js
-import { SymmetricKey, universaReady } from 'unicrypto';
+import { SymmetricKey, unicryptoReady } from 'unicrypto';
 
-await universaReady;
+await unicryptoReady;
 // Creates random key (AES256, CTR)
 const symmetricKey = new SymmetricKey();
 

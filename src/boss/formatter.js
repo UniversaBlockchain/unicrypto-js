@@ -134,6 +134,7 @@ module.exports = class Formatter {
 
     function writeMap(value) {
       self.writeHeader(DICT, value.size);
+      self.cacheObject(value);
 
       for(let entry of value) {
         self.put(entry[0]);

@@ -136,6 +136,18 @@ describe('RSA', function() {
       expect(fp(key2)).to.equal(fp(key));
     });
 
+    it('should not unpack wrong binary without exception', async () => {
+      this.timeout(8000);
+
+      try {
+        const key2 = await PrivateKey.unpack({
+          bin: new Uint8Array([1,2,3]),
+          password: "qwerty"
+        });
+         expect.fail();
+      } catch(err) {}
+    });
+
     it('should unpack with password and iterations (different signature)', async () => {
       this.timeout(8000);
 

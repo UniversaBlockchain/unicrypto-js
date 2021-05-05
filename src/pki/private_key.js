@@ -200,7 +200,7 @@ module.exports = class PrivateKey extends AbstractKey {
   static async unpackBOSS(options, password) {
     await Module.isReady;
 
-    return new Promise(resolve => {
+    return new Promise((resolve, reject) => {
       const passwd = options.password || password;
       if (!passwd) return resolve(new Module.PrivateKeyImpl(options));
 

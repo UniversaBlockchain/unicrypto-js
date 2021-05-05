@@ -248,9 +248,10 @@ module.exports = class PublicKey extends AbstractKey {
       decoded = decode58(address);
     } catch (err) { decoded = address; }
 
-    const addr = new KeyAddress(decoded);
-
-    return addr.isValid;
+    try {
+      const addr = new KeyAddress(decoded);
+      return addr.isValid;
+    } catch(err) { return false; }
   }
 }
 

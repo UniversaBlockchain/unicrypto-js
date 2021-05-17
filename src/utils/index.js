@@ -88,3 +88,12 @@ exports.randomAlnums = (size) => {
 
   return result;
 };
+
+exports.getChromeVersion = () => {
+  const chromeVersion = navigator.userAgent.match(/Chrom(e|ium)\/([0-9]+)\./);
+
+  if (!chromeVersion) return false;
+
+  return parseInt(chromeVersion[2], 10);
+};
+

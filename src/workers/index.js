@@ -1,5 +1,5 @@
 const workerCode = require('./worker');
-const { isNode } = require('../utils');
+const { isNode, getChromeVersion, decode64 } = require('../utils');
 
 class BrowserWorker {
   constructor(id, scriptSRC) {
@@ -12,7 +12,13 @@ class BrowserWorker {
   runTask(task) {
     const id = this.id;
     const { command, options } = task;
-    this.worker.postMessage({ command, options, taskId: task.id, id  });
+    this.worker.postMessage({
+      command,
+      options,
+      taskId: task.id,
+      id,
+      safeMode: getChromeVersion() === 90
+    });
   }
   send(data) { this.worker.postMessage(data); }
   addListener(listener) { this.worker.onmessage = listener; }
@@ -39,12 +45,24 @@ class WorkerFactory {
     worker.addListener(onMessage);
 
     function onMessage(msg) {
-      const { type, value, id, taskId } = msg.data;
+      const { type, value, id, taskId, safeMode } = msg.data;
+
+      console.log(msg.data);
       if (type === 'state') self.workers[id].state = value;
       if (type === 'result') {
+        const task = self.processing[taskId];
+        const clearedValue = decodeValue(task.command, value);
         self.workers[id].state = 'idle';
-        self.processing[taskId].resolve(value);
+        task.resolve(clearedValue);
         delete self.processing[taskId];
+      }
+
+      function decodeValue(command, value) {
+        if (!safeMode) return value;
+
+        if (command === 'PrivateKey.generate') return Uint8Array.from(value);
+
+        return value;
       }
     }
 

@@ -1817,6 +1817,9 @@ Module.isReady = new Promise(resolve => {
   };
 });
 
+let SAFE_MODE = false;
+const encodeBIN = (bin) => [].slice.call(bin);
+
 const SHAStringTypes = {
   "sha1": 0,
   "sha256": 1,
@@ -1870,7 +1873,8 @@ async function publicKeyEncrypt(opts, callback) {
   const { options, raw } = opts;
   const { data, hashType, seed } = options;
 
-  const cb = (result) => callback(new Uint8Array(result));
+
+  const cb = (result) => callback(new Uint8Array(266));
 
   Module.PublicKeyImpl.initFromPackedBinary(raw, (key) => {
     if (seed) key.encryptWithSeed(data, hashType, seed, cb);
@@ -1882,8 +1886,13 @@ async function generatePrivateKey(options, callback) {
   await Module.isReady;
   const { strength } = options;
 
+  function safeCallback(output) {
+    if (SAFE_MODE == 2) return callback(encodeBIN(output));
+    callback(output);
+  }
+
   Module.PrivateKeyImpl.generate(strength, (k) => {
-    k.pack(bin => callback(bin));
+    k.pack(bin => safeCallback(Uint8Array.from(bin)));
   });
 }
 
@@ -1899,10 +1908,13 @@ async function pbkdf2(opts, callback) {
 
 onmessage = function(msg) {
   const { data } = msg;
-  const { command, options, taskId } = data;
+  const { command, options, taskId, safeMode } = data;
+  SAFE_MODE = safeMode;
+  console.log("RECIEVE COMMAND", data, SAFE_MODE);
 
   const cb = (value) => {
-    postMessage({ type: 'result', taskId, value, id: WORKER_ID });
+    console.log("RUN CALLBACK", taskId, value, WORKER_ID);
+    postMessage({ type: 'result', taskId, value, id: WORKER_ID, safeMode });
   };
 
   if (command === 'PrivateKey.generate') generatePrivateKey(options, cb);

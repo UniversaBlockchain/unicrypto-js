@@ -1883,7 +1883,7 @@ async function generatePrivateKey(options, callback) {
   const { strength } = options;
 
   Module.PrivateKeyImpl.generate(strength, (k) => {
-    k.pack(bin => callback(bin));
+    k.pack(bin => callback(Uint8Array.from(bin)));
   });
 }
 

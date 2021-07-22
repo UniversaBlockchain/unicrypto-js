@@ -67,7 +67,7 @@ describe('Tools', function() {
     expect(decode64("f7YrNmKlscCxpIwNw7jIIKrDtN1fkhsdsc7RDsZEb20").length).to.equal(32);
   });
 
-  it('should convert bytes to Uint8Array', () => {
+  it('should convert bytes to text and back', () => {
     const str = "ll3bklbj123klbj2b34ljk234=sd dfg*)&#$)*^!#%";
     const bytes = textToBytes(str);
     expect(bytesToText(bytes)).to.equal(str);

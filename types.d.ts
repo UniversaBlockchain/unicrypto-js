@@ -5,7 +5,7 @@ declare module 'unicrypto' {
   export function decode64Short(encoded: string): Uint8Array;
   export function encode58(data: Uint8Array): string;
   export function decode58(encoded: string): Uint8Array;
-
+  export function bytesToText(text: Uint8Array): string;
   export function textToBytes(text: string): Uint8Array;
   export function hexToBytes(hexstring: string): Uint8Array;
   export function bytesToHex(bytes: Uint8Array): string;

@@ -2073,7 +2073,7 @@ async function shaGet(options, cb) {
   const instance = SHA.instances[taskId];
   if (!instance) return cb();
 
-  const result = await instance.get(task);
+  const result = await instance.get(task.data, task.encoding);
   delete SHA.instances[taskId];
   cb(result);
 }

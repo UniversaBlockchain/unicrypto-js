@@ -112,7 +112,7 @@ class SHA {
 
   async get(data, encoding) {
     if (!isNode()) {
-     return WorkerFactory.runTask('SHA.get', { taskId: this.workerId, task: data });
+     return WorkerFactory.runTask('SHA.get', { taskId: this.workerId, task: { data, encoding } });
     }
 
     if ((typeof data !== 'string' && data) || this.empty)

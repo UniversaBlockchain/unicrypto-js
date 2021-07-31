@@ -26,7 +26,7 @@ class WorkerFactory {
     this.tasks = [];
     this.processing = {};
     this.lastTaskId = 1;
-    this.scriptSRC = document.currentScript && document.currentScript.src || '';
+    this.scriptSRC = typeof document !== 'undefined' && document.currentScript && document.currentScript.src || '';
     this.maxWorkers = navigator.hardwareConcurrency - 1;
 
     const self = this;

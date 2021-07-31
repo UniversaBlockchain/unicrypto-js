@@ -1,6 +1,3 @@
-
-
-
 var Module=typeof Module!=="undefined"?Module:{};
 var moduleOverrides={};
 var key;
@@ -1897,6 +1894,190 @@ async function pbkdf2(opts, callback) {
   Module.pbkdf2(SHAStringTypes[hashStringType], rounds || 5000, keyLength, password, salt, cb);
 }
 
+class SHA {
+  constructor(hashType) {
+    this.hashType = hashType + '';
+
+    const wasmTpe = SHA.wasmType(this.hashType);
+    const tpe = typeof wasmTpe === 'number' ? wasmTpe : this.hashType;
+    this.wasmType = tpe;
+    this.empty = true;
+    this.hash = null;
+  }
+
+  getInstance() {
+    return new Module.DigestImpl(this.wasmType);
+  }
+
+  delete() {
+    this.hash.delete();
+  }
+
+  async update(data) {
+    await this.init();
+    this.empty = false;
+    return this.hash.update(data);
+  }
+
+  updateSync(data) {
+    this.initSync();
+    this.empty = false;
+    return this.hash.update(data);
+  }
+
+  async put(data) {
+    return this.update(data);
+  }
+
+  putSync(data) {
+    this.updateSync(data);
+  }
+
+  async doFinal() {
+    await this.init();
+    this.hash.doFinal();
+  }
+
+  doFinalSync() {
+    this.initSync();
+    this.hash.doFinal();
+  }
+
+  getDigestSize() {
+    const instance = this.getInstance();
+    const size = instance.getDigestSize();
+    instance.delete();
+
+    return size;
+  }
+
+  async getDigest(encoding) {
+    await this.init();
+    const hash = this.hash;
+
+    const digest = await new Promise((resolve, reject) => {
+      hash.getDigest(res => {
+        const bytes = new Uint8Array(res);
+        if (encoding === 'hex') resolve(bytesToHex(bytes));
+        else resolve(bytes);
+      });
+    });
+
+    this.delete();
+
+    return digest;
+  }
+
+  getDigestSync(encoding) {
+    this.initSync();
+    const hash = this.hash;
+    let digest;
+
+    hash.getDigest(res => {
+      const bytes = new Uint8Array(res);
+      if (encoding === 'hex') digest = bytesToHex(bytes);
+      else digest = bytes;
+    });
+
+    this.delete();
+
+    return digest;
+  }
+
+  async get(data, encoding) {
+    if ((typeof data !== 'string' && data) || this.empty)
+      await this.update(data);
+    else encoding = data;
+
+    await this.doFinal();
+
+    return this.getDigest(encoding);
+  }
+
+  getSync(data, encoding) {
+    if ((typeof data !== 'string' && data) || this.empty)
+      this.updateSync(data);
+    else encoding = data;
+
+    this.doFinalSync();
+
+    return this.getDigestSync(encoding);
+  }
+
+  static async hashId(data) {
+    await Module.isReady;
+
+    return new Promise(resolve => {
+      Module.calcHashId(data, res => resolve(new Uint8Array(res)));
+    });
+  }
+
+  static wasmType(stringType) {
+    if (typeof stringType !== 'string') return false;
+
+    const lower = stringType.toLowerCase();
+    let tpe = SHA.StringTypes[lower];
+    if (typeof tpe !== 'number') tpe = SHA.StringTypes[`sha${lower}`];
+    if (typeof tpe !== 'number') return false;
+
+    return tpe;
+  }
+
+  async init(wasmType) {
+    if (this.hash) return;
+
+    await Module.isReady;
+
+    if (!this.hash) this.hash = new Module.DigestImpl(this.wasmType);
+  }
+
+  initSync(wasmType) {
+    if (this.hash) return;
+    this.hash = new Module.DigestImpl(this.wasmType);
+  }
+
+  static async getDigest(hashType, data) {
+    const sha = new SHA(hashType);
+
+    return sha.get(data);
+  }
+
+  static getDigestSync(hashType, data) {
+    if (!Module.isInitialized) throw new Error('unicrypto is not ready');
+    const sha = new SHA(hashType);
+
+    return sha.getSync(data);
+  }
+}
+
+SHA.StringTypes = SHAStringTypes;
+
+SHA.instances = {};
+
+function shaInit(options, cb) {
+  SHA.instances[options.taskId] = new SHA(options.task);
+  cb(null);
+}
+
+async function shaPut(options, cb) {
+  const { taskId, task } = options;
+  const instance = SHA.instances[taskId];
+  console.log(instance, options);
+  if (!instance) return cb();
+  await SHA.instances[taskId].put(task);
+  cb(null);
+}
+
+async function shaGet(options, cb) {
+  const { taskId, task } = options;
+  const instance = SHA.instances[taskId];
+  if (!instance) return cb();
+
+  const result = await instance.get(task);
+  delete SHA.instances[taskId];
+  cb(result);
+}
+
 onmessage = function(msg) {
   const { data } = msg;
   const { command, options, taskId } = data;
@@ -1911,6 +2092,9 @@ onmessage = function(msg) {
   if (command === 'privateKey.decrypt') privateKeyDecrypt(options, cb);
   if (command === 'publicKey.verify') publicKeyVerify(options, cb);
   if (command === 'publicKey.encrypt') publicKeyEncrypt(options, cb);
+  if (command === 'SHA.init') shaInit(options, cb);
+  if (command === 'SHA.put') shaPut(options, cb);
+  if (command === 'SHA.get') shaGet(options, cb);
 };
 
 postMessage({

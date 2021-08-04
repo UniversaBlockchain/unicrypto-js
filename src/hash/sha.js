@@ -1,8 +1,8 @@
 var Module = Module || require('../vendor/wasm/wrapper');
 const { bytesToHex } = require('../utils/bytes');
 const { guid } = require('../utils/id_generators');
-const WorkerFactory = require('../workers');
 
+const isWorker = () => typeof importScripts === "function";
 const isNode = () => Object.prototype.toString.call(typeof process !== 'undefined' ? process : 0) === '[object process]';
 
 const StringTypes = {
@@ -17,14 +17,11 @@ const StringTypes = {
 class SHA {
   constructor(hashType) {
     this.hashType = hashType + '';
-    // console.log(this.hashType);
     const wasmTpe = SHA.wasmType(this.hashType);
     const tpe = typeof wasmTpe === 'number' ? wasmTpe : this.hashType;
     this.wasmType = tpe;
     this.empty = true;
     this.hash = null;
-    this.workerId = null;
-    if (!isNode()) this.workerId = guid();
   }
 
   getInstance() {
@@ -39,10 +36,7 @@ class SHA {
     await this.init();
     this.empty = false;
 
-    if (!isNode()) {
-      return WorkerFactory.runTask('SHA.put', { taskId: this.workerId, task: data });
-    }
-    else return this.hash.update(data);
+    return this.hash.update(data);
   }
 
   updateSync(data) {
@@ -111,10 +105,6 @@ class SHA {
   }
 
   async get(data, encoding) {
-    if (!isNode()) {
-     return WorkerFactory.runTask('SHA.get', { taskId: this.workerId, task: { data, encoding } });
-    }
-
     if ((typeof data !== 'string' && data) || this.empty)
       await this.update(data);
     else encoding = data;
@@ -157,11 +147,6 @@ class SHA {
     if (this.hash) return;
 
     await Module.isReady;
-
-    if (!isNode()) {
-      this.hash = true;
-      return WorkerFactory.runTask('SHA.init', { taskId: this.workerId, task: this.hashType });
-    }
 
     if (!this.hash) this.hash = new Module.DigestImpl(this.wasmType);
   }

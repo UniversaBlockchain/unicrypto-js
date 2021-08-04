@@ -1,8 +1,6 @@
-var Minicrypto = Minicrypto || require('../index');
+var Unicrypto = Unicrypto || require('../index');
 var chai = chai || require('chai');
 var expect = chai.expect;
-
-var Module = Module || require('../src/vendor/wasm/wrapper');
 
 describe('RSA', function() {
   const {
@@ -13,31 +11,31 @@ describe('RSA', function() {
     hexToBytes,
     KeyAddress,
     unicryptoReady
-  } = Minicrypto;
+  } = Unicrypto;
 
   const {
     rsa, PrivateKey, PublicKey,
     SymmetricKey, AbstractKey
-  } = Minicrypto;
-  const { SHA } = Minicrypto;
+  } = Unicrypto;
+  const { SHA } = Unicrypto;
 
-  Minicrypto.seed = Minicrypto.seed || {};
-  const seedKeys = Minicrypto.seed.keys || require('./seed/keys');
-  const seedOAEP = Minicrypto.seed.oaep || require('./seed/oaep');
+  Unicrypto.seed = Unicrypto.seed || {};
+  const seedKeys = Unicrypto.seed.keys || require('./seed/keys');
+  const seedOAEP = Unicrypto.seed.oaep || require('./seed/oaep');
 
   const seedOAEPExp = {
     e: seedOAEP.e.toString(16),
     p: seedOAEP.p.toString(16),
     q: seedOAEP.q.toString(16)
   };
-  const seedPSS = Minicrypto.seed.pss || require('./seed/pss');
+  const seedPSS = Unicrypto.seed.pss || require('./seed/pss');
   const seedPSSExp = {
     e: seedPSS.e.toString(16),
     p: seedPSS.p.toString(16),
     q: seedPSS.q.toString(16),
     n: seedPSS.n.toString(16)
   };
-  const seedCustomSalt = Minicrypto.seed.customSalt || require('./seed/custom_salt');
+  const seedCustomSalt = Unicrypto.seed.customSalt || require('./seed/custom_salt');
 
   function fp(key) {
     return encode64(key.fingerprint);
@@ -111,15 +109,13 @@ describe('RSA', function() {
     });
 
     it('should pack with password', async () => {
-      this.timeout(8000);
-
       const base64Encoded = seedKeys[2];
       const key = await PrivateKey.unpack(decode64(base64Encoded));
       const keyPacked = await key.pack("qwerty");
       const key2 = await PrivateKey.unpack({ bin: keyPacked, password: "qwerty" });
 
       expect(fp(key2)).to.equal(fp(key));
-    });
+    }).timeout(10000);
 
     it('should unpack with password and iterations', async () => {
       this.timeout(8000);
@@ -403,7 +399,7 @@ describe('RSA', function() {
 
       expect(unpacked.getP()).to.equal(unpacked2.getP());
       expect(unpacked2.getQ()).to.equal(privateKey.getQ());
-    });
+    }).timeout(10000);
 
     it('should restore key from exponents (e, p, q)', async () => {
       var privateKey = await PrivateKey.unpack(seedOAEPExp);
@@ -559,6 +555,6 @@ describe('RSA', function() {
       const keyPacked = await key.pack("qwerty");
 
       expect(AbstractKey.typeOf(keyPacked)).to.equal(AbstractKey.TYPE_PRIVATE_PASSWORD_V2);
-    });
+    }).timeout(10000);
   });
 });

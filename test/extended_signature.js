@@ -1,15 +1,13 @@
-var Minicrypto = Minicrypto || require('../index');
+var Unicrypto = Unicrypto || require('../index');
 var chai = chai || require('chai');
 var expect = chai.expect;
 
-var Module = Module || require('../src/vendor/wasm/wrapper');
-
 describe('Extended signature', function() {
-  Minicrypto.seed = Minicrypto.seed || {};
-  var seedKeys = Minicrypto.seed.keys || require('./seed/keys');
+  Unicrypto.seed = Unicrypto.seed || {};
+  var seedKeys = Unicrypto.seed.keys || require('./seed/keys');
 
-  const { PrivateKey, ExtendedSignature } = Minicrypto;
-  const { bytesToHex: hex, decode64, hexToBytes, textToHex } = Minicrypto;
+  const { PrivateKey, ExtendedSignature } = Unicrypto;
+  const { bytesToHex: hex, decode64, hexToBytes, textToHex } = Unicrypto;
   const { keyId, extractKeyId, extractPublicKey } = ExtendedSignature;
 
   it('should get key id', async () => {
@@ -32,7 +30,7 @@ describe('Extended signature', function() {
     expect(es).to.be.ok;
     expect(hex(es.key)).to.equal(hex(id));
     expect(hex(extractKeyId(signature))).to.equal(hex(pubKey.fingerprint));
-  });
+  }).timeout(10000);
 
   it('should extract key from signature', async () => {
     const data = hexToBytes(textToHex('Hello world'));

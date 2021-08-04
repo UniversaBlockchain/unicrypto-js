@@ -2,7 +2,7 @@ var Module = Module || require('../vendor/wasm/wrapper');
 
 const SHA = require('../hash/sha');
 
-const { isNode } = require('../utils');
+const { isNode, isWorker } = require('../utils');
 
 module.exports = derive;
 
@@ -27,9 +27,14 @@ async function derive(hashStringType, options) {
 
   await Module.isReady;
 
-  if (!isNode()) {
-    const WorkerFactory = require('../workers');
-    return WorkerFactory.runTask('pbkdf2.derive', { hashStringType, options });
+  if (!isNode() && !isWorker()) {
+    const CryptoWorker = require('../workers');
+
+    return CryptoWorker.run(`(resolve, reject) => {
+      const { pbkdf2 } = this.Unicrypto;
+      const { hashStringType, options } = this.data;
+      pbkdf2(hashStringType, options).then(resolve, reject);
+    }`, { data: { hashStringType, options } });
   } else return new Promise((resolve, reject) => {
     const { password, salt, keyLength, rounds } = options;
     const cb = (result) => resolve(new Uint8Array(result));

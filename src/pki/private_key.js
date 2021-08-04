@@ -12,7 +12,7 @@ const AbstractKey = require('./abstract_key');
 const SymmetricKey = require('./symmetric_key');
 const KeyInfo = require('./key_info');
 const ExtendedSignature = require('./extended_signature');
-const WorkerFactory = require('../workers');
+const CryptoWorker = require('../workers');
 
 const {
   BigInteger,
@@ -25,7 +25,8 @@ const {
   textToHex,
   hexToBytes,
   encode64,
-  isNode
+  isNode,
+  isWorker
 } = utils;
 
 const { AESCTRTransformer } = cipher;
@@ -69,13 +70,13 @@ module.exports = class PrivateKey extends AbstractKey {
     let saltLength = -1;
     if (typeof options.saltLength === 'number') saltLength = options.saltLength;
 
-    if (!isNode()) {
-      const raw = this.raw;
-
-      return WorkerFactory.runTask('privateKey.sign', {
-        raw,
-        options: { saltLength, hashType, mgf1Type, data, salt: options.salt }
-      });
+    if (!isNode() && !isWorker()) {
+      return CryptoWorker.run(`async (resolve, reject) => {
+        const { PrivateKey } = this.Unicrypto;
+        const { packed, data, options } = this.data;
+        const key = await PrivateKey.unpack(packed);
+        resolve(await key.sign(data, options));
+      }`, { data: { packed: await this.pack(), data, options } });
     } else {
       const key = await this.load();
 
@@ -124,13 +125,13 @@ module.exports = class PrivateKey extends AbstractKey {
     const self = this;
     const oaepHash = SHA.wasmType(options.oaepHash || 'sha1');
 
-    if (!isNode()) {
-      const raw = this.raw;
-
-      return WorkerFactory.runTask('privateKey.decrypt', {
-        raw,
-        options: { oaepHash, data }
-      });
+    if (!isNode() && !isWorker()) {
+      return CryptoWorker.run(`async (resolve, reject) => {
+        const { PrivateKey } = this.Unicrypto;
+        const { packed, data, options } = this.data;
+        const key = await PrivateKey.unpack(packed);
+        resolve(await key.decrypt(data, options));
+      }`, { data: { packed: await this.pack(), data, options } });
     } else {
       const key = await this.load();
 
@@ -228,8 +229,15 @@ module.exports = class PrivateKey extends AbstractKey {
   static async generate(options) {
     const { strength } = options;
 
-    if (!isNode()) {
-      const packed = await WorkerFactory.runTask('PrivateKey.generate', options);
+    if (!isNode() && !isWorker()) {
+      const packed = await CryptoWorker.run(`async (resolve, reject) => {
+        const { PrivateKey } = this.Unicrypto;
+        const { options } = this.data;
+        const key = await PrivateKey.generate(options);
+        const packed = await key.pack();
+        resolve(packed);
+      }`, { data: { options } });
+
       return PrivateKey.unpack(packed);
     } else {
       await Module.isReady;

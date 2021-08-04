@@ -1,4 +1,4 @@
-var Module = Module || require('./src/vendor/wasm/wrapper');
+const Module = require('./src/vendor/wasm/wrapper');
 
 const hash = require('./src/hash');
 const dh = require('./src/dh');
@@ -7,10 +7,11 @@ const utils = require('./src/utils');
 const cipher = require('./src/cipher');
 const Boss = require('./src/boss/protocol');
 const universa = require('./src/universa');
-const WorkerFactory = require('./src/workers');
 
+Module._init();
 exports.unicryptoReady = Module.isReady;
 exports.Boss = Boss;
+exports.CryptoWorker = require('./src/workers');
 
 for (var key in universa) { exports[key] = universa[key]; }
 for (var key in hash) { exports[key] = hash[key]; }

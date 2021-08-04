@@ -70,6 +70,7 @@ exports.encode58 = base58.encode;
 exports.decode58 = base58.decode;
 exports.isBrowser = () => typeof window !== 'undefined' && typeof window.document !== 'undefined';
 exports.isNode = () => Object.prototype.toString.call(typeof process !== 'undefined' ? process : 0) === '[object process]';
+exports.isWorker = () => typeof importScripts === "function";
 
 exports.concatBytes = function(a, b) {
   const c = new Uint8Array(a.length + b.length);

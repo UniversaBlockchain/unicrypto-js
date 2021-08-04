@@ -1,6 +1,6 @@
 {
   "name": "unicrypto",
-  "version": "1.6.1",
+  "version": "1.7.0",
   "description": "Minimalistic Javascript library required to perform basic operations with Universa smart contracts and other objects.",
   "main": "index.js",
   "types": "./types.d.ts",
@@ -39,5 +39,8 @@
     "gently-copy": "^3.2.0",
     "jsbn": "^1.1.0",
     "randombytes": "^2.1.0"
+  },
+  "browser": {
+    "fs": false
   }
 }

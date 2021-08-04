@@ -1,8 +1,6 @@
-var Minicrypto = Minicrypto || require('../index');
+var Unicrypto = Unicrypto || require('../index');
 var chai = chai || require('chai');
 var expect = chai.expect;
-
-var Module = Module || require('../src/vendor/wasm/wrapper');
 
 describe('Hash', function() {
   const {
@@ -13,9 +11,9 @@ describe('Hash', function() {
     encode64,
     decode64,
     unicryptoReady
-  } = Minicrypto;
+  } = Unicrypto;
 
-  const { SHA, HMAC } = Minicrypto;
+  const { SHA, HMAC } = Unicrypto;
 
   const STANDARD = {
     sha256: {
@@ -135,7 +133,7 @@ describe('Hash', function() {
         }
 
         expect(1).to.equal(1);
-      });
+      }).timeout(10000);
     });
   });
 

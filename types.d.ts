@@ -176,6 +176,10 @@ declare module 'unicrypto' {
     serializeToBOSS(): any
   };
 
+  export class CryptoWorker {
+    export function run(fn: string, options: any): Promise<any>;
+  };
+
   export namespace Boss {
     export function dump(data: any): Uint8Array;
     export function load(packed: Uint8Array): any;

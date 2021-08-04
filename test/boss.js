@@ -1,4 +1,4 @@
-var Minicrypto = Minicrypto || require('../index');
+var Unicrypto = Unicrypto || require('../index');
 var chai = chai || require('chai');
 var expect = chai.expect;
 
@@ -39,7 +39,7 @@ describe('BOSS Protocol', function() {
     Boss,
     encode64,
     decode64
-  } = Minicrypto;
+  } = Unicrypto;
 
   it('should ignore functions', function() {
     const hash = { a: 1, b: 2, c: function() {} };

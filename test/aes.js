@@ -1,8 +1,6 @@
-var Minicrypto = Minicrypto || require('../index');
+var Unicrypto = Unicrypto || require('../index');
 var chai = chai || require('chai');
 var expect = chai.expect;
-
-var Module = Module || require('../src/vendor/wasm/wrapper');
 
 describe('AES', function() {
   const {
@@ -12,7 +10,7 @@ describe('AES', function() {
     textToBytes,
     randomBytes,
     byteStringToArray
-  } = Minicrypto;
+  } = Unicrypto;
 
   const key = hexToBytes('000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f');
   const message = hexToBytes('00112233445566778899aabbccddeeff');

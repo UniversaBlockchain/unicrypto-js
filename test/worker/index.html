@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>Unicrypto</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="mocha.css">
+    <script src="./chai.js"></script>
+    <script src="./mocha.js"></script>
+    <script>
+      mocha.setup('bdd');
+    </script>
+
+    <script src="./crypto.v1.7.0.js"></script>
+
+
+
+    <!-- <script src="./crypto.js"></script>
+    <script src="./minicrypto.min.js"></script> -->
+
+    <script>
+      var { hexToBytes, bytesToHex, BigInteger } = Unicrypto;
+      var i = (hex) => new BigInteger(hex, 16);
+
+      var pssSeed = {
+        n: i('a2ba40ee07e3b2bd2f02ce227f36a195024486e49c19cb41bbbdfbba98b22b0e577c2eeaffa20d883a76e65e394c69d4b3c05a1e8fadda27edb2a42bc000fe888b9b32c22d15add0cd76b3e7936e19955b220dd17d4ea904b1ec102b2e4de7751222aa99151024c7cb41cc5ea21d00eeb41f7c800834d2c6e06bce3bce7ea9a5'),
+        e: i('010001'),
+        p: i('d17f655bf27c8b16d35462c905cc04a26f37e2a67fa9c0ce0dced472394a0df743fe7f929e378efdb368eddff453cf007af6d948e0ade757371f8a711e278f6b'),
+        q: i('c6d92b6fee7414d1358ce1546fb62987530b90bd15e0f14963a5e2635adb69347ec0c01b2ab1763fd8ac1a592fb22757463a982425bb97a3a437c5bf86d03f2f'),
+        salt: hexToBytes('e3b5d5d002c1bce50c2b65ef88a188d83bce7e61'),
+        message: hexToBytes('859eef2fd78aca00308bdc471193bf55bf9d78db8f8a672b484634f3c9c26e6478ae10260fe0dd8c082e53a5293af2173cd50c6d5d354febf78b26021c25c02712e78cd4694c9f469777e451e7f8e9e04cd3739c6bbfedae487fb55644e9ca74ff77a53cb729802f6ed4a5ffa8ba159890fc'),
+        signature: hexToBytes('8daa627d3de7595d63056c7ec659e54406f10610128baae821c8b2a0f3936d54dc3bdce46689f6b7951bb18e840542769718d5715d210d85efbb596192032c42be4c29972c856275eb6d5a45f05f51876fc6743deddd28caec9bb30ea99e02c3488269604fe497f74ccd7c7fca1671897123cbd30def5d54a2b5536ad90a747e')
+      };
+
+      var oaepSeed = {
+        n: i('bbf82f090682ce9c2338ac2b9da871f7368d07eed41043a440d6b6f07454f51fb8dfbaaf035c02ab61ea48ceeb6fcd4876ed520d60e1ec4619719d8a5b8b807fafb8e0a3dfc737723ee6b4b7d93a2584ee6a649d060953748834b2454598394ee0aab12d7b61a51f527a9a41f6c1687fe2537298ca2a8f5946f8e5fd091dbdcb'),
+        e: i('11'),
+        p: i('eecfae81b1b9b3c908810b10a1b5600199eb9f44aef4fda493b81a9e3d84f632124ef0236e5d1e3b7e28fae7aa040a2d5b252176459d1f397541ba2a58fb6599'),
+        q: i('c97fb1f027f453f6341233eaaad1d9353f6c42d08866b1d05a0f2035028b9d869840b41666b42e92ea0da3b43204b5cfce3352524d0416a5a441e700af461503'),
+        dP: i('54494ca63eba0337e4e24023fcd69a5aeb07dddc0183a4d0ac9b54b051f2b13ed9490975eab77414ff59c1f7692e9a2e202b38fc910a474174adc93c1f67c981'),
+        dQ: i('471e0290ff0af0750351b7f878864ca961adbd3a8a7e991c5c0556a94c3146a7f9803f8f6f8ae342e931fd8ae47a220d1b99a495849807fe39f9245a9836da3d'),
+        qInv: i('b06c4fdabb6301198d265bdbae9423b380f271f73453885093077fcd39e2119fc98632154f5883b167a967bf402b4e9e2e0f9656e698ea3666edfb25798039f7'),
+        pubPacked: "HggMEbyAu/gvCQaCzpwjOKwrnahx9zaNB+7UEEOkQNa28HRU9R+437qvA1wCq2HqSM7rb81Idu1SDWDh7EYZcZ2KW4uAf6+44KPfxzdyPua0t9k6JYTuamSdBglTdIg0skVFmDlO4KqxLXthpR9SeppB9sFof+JTcpjKKo9ZRvjl/Qkdvcs=",
+        originalMessage: hexToBytes('d436e99569fd32a7c8a05bbc90d32c49'),
+        encryptedMessage: hexToBytes('1253e04dc0a5397bb44a7ab87e9bf2a039a33d1e996fc82a94ccd30074c95df763722017069e5268da5d1c0b4f872cf653c11df82314a67968dfeae28def04bb6d84b1c31d654a1970e5783bd6eb96a024c2ca2f4a90fe9f2ef5c9c140e5bb48da9536ad8700c84fc9130adea74e558d51a74ddf85d8b50de96838d6063e0955'),
+        seed: hexToBytes('aafd12f659cae63489b479e5076ddec2f06cb58f'),
+        DB: hexToBytes('da39a3ee5e6b4b0d3255bfef95601890afd807090000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001d436e99569fd32a7c8a05bbc90d32c49'),
+        dbMask: hexToBytes('06e1deb2369aa5a5c707d82c8e4e93248ac783dee0b2c04626f5aff93edcfb25c9c2b3ff8ae10e839a2ddb4cdcfe4ff47728b4a1b7c1362baad29ab48d2869d5024121435811591be392f982fb3e87d095aeb40448db972f3ac14eaff49c8c3b7cfc951a51ecd1dde61264'),
+        maskedDB: hexToBytes('dcd87d5c68f1eea8f55267c31b2e8bb4251f84d7e0b2c04626f5aff93edcfb25c9c2b3ff8ae10e839a2ddb4cdcfe4ff47728b4a1b7c1362baad29ab48d2869d5024121435811591be392f982fb3e87d095aeb40448db972f3ac14f7bc275195281ce32d2f1b76d4d353e2d'),
+        seedMask: hexToBytes('41870b5ab029e657d95750b54c283c08725dbea9'),
+        maskedSeed: hexToBytes('eb7a19ace9e3006350e329504b45e2ca82310b26'),
+        EM: hexToBytes('eb7a19ace9e3006350e329504b45e2ca82310b26dcd87d5c68f1eea8f55267c31b2e8bb4251f84d7e0b2c04626f5aff93edcfb25c9c2b3ff8ae10e839a2ddb4cdcfe4ff47728b4a1b7c1362baad29ab48d2869d5024121435811591be392f982fb3e87d095aeb40448db972f3ac14f7bc275195281ce32d2f1b76d4d353e2d')
+      };
+
+      oaepSeed.m = calcM();
+      oaepSeed.d = calcD();
+
+      function calcM() {
+        const { p, q } = oaepSeed;
+
+        return p.subtract(BigInteger.ONE).multiply(q.subtract(BigInteger.ONE));
+      }
+
+      function calcD() {
+        const { e, m } = oaepSeed;
+
+        return e.modInverse(m);
+      }
+
+      var keysSeed = [
+        "JgAcAQABxAAB2ZLz9pA2qlUys9oomId1YF8u8n8T98ekEv8gYAyBQfnHnhqc\n" +
+          "iPcTe4AoZb+r4h1sBgwhZ39pXXNOZDBOMd+e2UHIHYAZvi6R7lNnOm0waLCH\n" +
+          "H7rNXJLCzPHpp7vhAhwVao9pu5U3Maw6dwAVvb4XBoQs2YyMjpSApQJOPizG\n" +
+          "qf6l4D5HW1AxLbWhlKvcs+wBapb9H7266Kzvf2mK2HARi7aQHO5fA/+YGXwe\n" +
+          "TLjt+iLB2TSOvl4juz6w7nmV18QF88FP1DkMWVxyHnFDaIB9E2XCe80Qr9dh\n" +
+          "GOfJcWefvJcdsvgtJMeEYm87IGt0yI/MlpyWFzjMj7VzT+NtQUBEN8QAAdqS\n" +
+          "4PEfNqpVMrPaKJiHdWCMAtUXsa1VMki4p0wG02pCp4h+ByPqzZx7BgNZxgYM\n" +
+          "IWd/VF0zQvCZ4r05BJNtYrG9Of9XSzyGBmd9Nyjj0TKLLYnt60QZx3Wpu+E9\n" +
+          "JEHlJGm7lTcxpSASABW9qzIzB/SEIs1roH3kSStMiSIWrGyhlIXcs+wBapY6\n" +
+          "SKNwuujh5Ha/9W/+G3HDzZiv0VNZtjNcYSkFHD6RyHcjjJdbe2xEzjxnIcbN\n" +
+          "7UGLsydve5TJPsKtaDxQAjJk0JpVMzruxdhiOb+Otq9IvZtV0weA4cMUNr4N\n" +
+          "5GOL6TeprGf8TFwpJ7DpgxpZYoYMO6r62hn8pIU=\n",
+
+          "JgAcAQABxAABzSj/76kVC9Oo6bBBDkEZIO2FPHl+QQOOkyUSW7X+wyWOq6gW\n" +
+          "/McbqGokidqWXYJfwKPauzH1GQ7oDCoOenPJEi4Jm4oAwKgZ53ngsssHynGs\n" +
+          "+2IJ2NYH61jtMUUp7O0A3lWfMgG9M0amTBGcuSKQ1IalP3cIeiMuo/2zeUat\n" +
+          "jm3GSY2o3vxjwwI40mIrzVjzGG5uPSD5socv0yEnI21utLV/opfJgUsqOIH+\n" +
+          "KlOO2NRZ9/BPrdv/wUP24Cs31rZIs8nfUap/JCXkcP/hBdWDxQ0aLaLIn5E6\n" +
+          "OvkKca4vr6/5AOCe1EJfKhx1K35PDFSxVkCumt/Ryc/NdXF9RacTgcQAAf7z\n" +
+          "J5RIYuMi9trkZJNUryi9Mtk4sK64olv5GG5uPSD5socv0yEnI21utLV/omwm\n" +
+          "ZK+IWp4IMM8KSkth1ONlCz4N1FB/IfKUVHmZPWp9Z9lgAXpC2iXkcP8i/WME\n" +
+          "6AO8s2zx7HkboeTMCoiGPKbY4Xily6cbsJUE4t7P3tWoG7sB5DwC6ornlUhY\n" +
+          "ZPkeNZH4ZMQ9p3pZk9ITurJM2flaJkj0y6ilZCPnuZm3L6SCT0vZXF1h9EMO\n" +
+          "IwtxRz7wzFMJJGVNDLjHH03bpQB865O4CkZuxUZl+f57nDgE1+vRPwdory0o\n" +
+          "zvpyQFRM0usYFfvUDfhk3MSti/SsBTg8VpYLF8c=\n",
+
+          "JgAcAQABxAABwOesjSMPkIiKWfcmcKXVtBSjD1ZpBWpfniY3oJbxO8aqHmpr\n" +
+          "HggJ+NPMBLmGzY6jEyYDpzv3jqS69XSTJmES+CGwTayjyllPp0yJvIysEsoY\n" +
+          "BwrXWFHojnSep8QUoDr6d1WfJ6nnsO+AYZ32AVZylUBGHbT7iGDzJ0zpuBOe\n" +
+          "/ZlmGOFVuuVzpvTbbJ/0iXm/uU0QPF/bz9rl6m86qJ4o7R9qZGb2s1wp6Ft2\n" +
+          "DGjhcD6ie4dhxOpVrO64zn7asMFCwt251CReK9YETWO+FMWgraBP8TnECSX6\n" +
+          "18N6bP/dISRIVfEnflxFJgeOFf0phTcJqR1l/7pAYscuhXcHoQbLt8QAAdee\n" +
+          "gnl3AvS5gRLooTef1tzoZkid4SVhSO6Vyua2i5go97k53D6ie4dhxOpzwpde\n" +
+          "e4yf/I/BQsLdudQkXisFTyTwCFqzQL916WYlFiAxY9UPt3iYTLmSSFYDkEry\n" +
+          "Pb4VYtiN43vP7M28ynzp+CZ35cbIAjsUurvRSTOzbAcWVozRhDl/9s44hF/p\n" +
+          "/gVy5fY9oTzh4sQnHIUbE6nE42B3d34IQdE3MeqhQBttn1OHTQxW+DASDt9d\n" +
+          "pR+5tdhep+rusR57XSsIGRQKefcmrYTZQSz3KdYidUN3yflgGtuVLmu91iIX\n" +
+          "IginhKtFCDcFQg9Bp83ZvSl0RAmBGn7qKAjlfR8=\n",
+
+          "JgAcAQABxAAB6X7cH9NdSxJ1rR/7QeRmDCWM0qNIJkQnI/T8kIAFt2VElm+7\n" +
+          "XeOEpN7tJC85dddWN6hegqW5FrJ8Ug2w8wBuseb/nZpEPeXzKjnAGpd7vrx3\n" +
+          "qfrvQirjCKyVE6OyseLGG1RXvcMTseqdCLAJz/a00SdgqRjK5zH6BhCJiRzV\n" +
+          "8tBsycopGrtPDbHbiSpgmYqvk63nLAxUrD6K/ZdfIN2P7HYekN9Um16L8e9U\n" +
+          "Ro8oqxTAv5kVLr04pA0GajBXl6jUa5Kp/xawSJmOeWY7Hpoi3u2zUa/sMs7O\n" +
+          "RivG9Hbvmj/S89wCjyFd0etLsdT1DH5bnZqWY34pFNuSqOvUKF8AdcQAAfjR\n" +
+          "0ILGcT0oRWN+oa5veOJy0icrk+KpCtDOcDSBLB6glU2HuS75WDJhlWDKcjBC\n" +
+          "m+JdpDRvc+6ISiDs3uUwoMz49mOkGriGJgMwUAnn+o2k+4aL6f2xfOLpGOio\n" +
+          "kKwGXg86zQLFD20qqToxfrZFvzjmVtM9msuNxeJjJtt/2tx6iMogaql8B6Cq\n" +
+          "JLTYuKdb+aJPp8oGNit2ofsp7nbzSKSAXWAX3d25H8HAhJ+xDCJ3r0gmRCcj\n" +
+          "9PydN2XsqHGWb7G9Rs4H0HgXndP9/fHjyiPLa/15BuiluRay4VJnmhFR0Tjr\n" +
+          "EL+nURLBubWit2VY/I0GxfDMdlwz3qi00lLW7ss="
+      ];
+
+      var customSaltSeed = {
+        n: i('cc518b92cef4a1baf1fe3fd3a4419bb5a0a5fe381c7d4b365dd672343a911236474a2fdff759dac21b40af42e83ec8ff30e403ed339faca0ab3a15f72a22dc822184a4949179590cbd53098d443fed61209a47223c4c6212e1b0085824d4ffd7f2d4927533f89a98132d070a61b062873c22b7ae65411a1ea6a9d33d30c5bbe63b19e05fe7589ac50ba5b704ee6fe9338d09dd7e9efd071534646101d058e676c9b650381ff5a0cdb2f11c3167378a25493957cb3ac71770a43cd77bc605b41f11c437560c0a0271154c4782f9c6a731477260e7334a380b81b197c1af53608d9ea451b136afdf7ada9ebba46db0a92464c7283b48a2eb332a89cc70ec02b8c66adc1e2344365db7f7bae30fe793e36eeacc93663969aca23a863556b2b9c4ff690f9f87994fa246c514bec71c91d0df26436934da51a6d484667d5e8f46f3599a8a5f52287dfd019e919ef4650406a44657f59342426ad61d33668b217ffe5f333c1858ce4cbbdcbbb71d486bca83f4eefed82088ea13e8b82288b639446831f61f298e96ebf5281056ed51d5f3e8e25c341386c699f4954a3f33a82efaf88e7d791e311bfbbcc947865349af32ddad1a5addafb10ff7401549a1c53bb7777533e269ec94e73d6f5927662c403a05b7b0541b3af816e91da94bbab8b095fedbb003253deffcbafb4190057f523564646d3f16d9e43a3b8be29a2694942bc047'),
+        e: i('010001'),
+        p: i('cd28ffefa9150bd3a8e9b0410e411920ed853c797e41038e9325125bb5fec3258eaba816fcc71ba86a2489da965d825fc0a3dabb31f5190ee80c2a0e7a73c9122e099b8a00c0a819e779e0b2cb07ca71acfb6209d8d607eb58ed314529eced00de559f3201bd3346a64c119cb92290d486a53f77087a232ea3fdb37946ad8e6dc6498da8defc63c30238d2622bcd58f3186e6e3d20f9b2872fd32127236d6eb4b57fa297c9814b2a3881fe2a538ed8d459f7f04faddbffc143f6e02b37d6b648b3c9df51aa7f2425e470ffe105d583c50d1a2da2c89f913a3af90a71ae2fafaff900e09ed4425f2a1c752b7e4f0c54b15640ae9adfd1c9cfcd75717d45a71381'),
+        q: i('fef327944862e322f6dae4649354af28bd32d938b0aeb8a25bf9186e6e3d20f9b2872fd32127236d6eb4b57fa26c2664af885a9e0830cf0a4a4b61d4e3650b3e0dd4507f21f2945479993d6a7d67d960017a42da25e470ff22fd6304e803bcb36cf1ec791ba1e4cc0a88863ca6d8e178a5cba71bb09504e2decfded5a81bbb01e43c02ea8ae795485864f91e3591f864c43da77a5993d213bab24cd9f95a2648f4cba8a56423e7b999b72fa4824f4bd95c5d61f4430e230b71473ef0cc530924654d0cb8c71f4ddba5007ceb93b80a466ec54665f9fe7b9c3804d7ebd13f0768af2d28cefa7240544cd2eb1815fbd40df864dcc4ad8bf4ac05383c56960b17c7'),
+        saltLength: 490,
+        message: hexToBytes('4655424152206d65616e73204675636b6564205570204265796f756420416c6c205265636f676e6974696f6e'),
+        signature: hexToBytes('78def239f5d4809c0557d11407c4825e6afb261873ab9f5d3e3fc22d4faa6c358b81c96d486ae2dbc8ad5ccecec6f49a0d5207579444b85ee4ec9a2d06a737a87717083282c4cf4af1ecc14a4fdfbdaa0d53e139fc77226bc4a01fe55bbc8a29403969911c3599508aaa8701f064b95e7e64b349e320724d6c9e2af5a8556d253bed772fb659bbee0e0a6dfe205d58f71f049b023d9ce8b278eaf3141cec06aab46e78cde55d3c403784819c34741deb681bdc2cee01c41e549f17aeb59ca80b8f045de1cf4ff983599e422bce2e68903d717291d897cf39961577e5fc9af9619379790628dbf369fee707a6a4daa3211ff840b46807351204acb60acc528099f851b8a76b4eaae5f84715ecc971c296f9cf3e058badc544a01e7d1dbef1c353d8704c6cffea9398e7ee6fda895d0dabc8ac18ed88c9497664c867e93e56fbebd4436eb3efa755f8fac3fa627e795be43d92d904fe0a9af989a6c504b1e11617d45b75cb5166795e58e69dfed4bf800f8088b0b48e12600c7f460bdaf34a1999d47ce3f5e11343d1e2b1797fc744aab9fcc938d08f70f91dd30c937e0515f8eb03e1a034044c33fbfbed83df5a1b7145ef0fcbb0f41f909793bd23bd964af1c5a53f72ef7b5920cd77d25cc2d9a7a38cbd86cbb3314222ae1ea3432f1370aefb1ea5780630b5f41c0cd408391537b05e242d0c7e0e6dadfd1de2c6c9500298c3')
+      };
+
+      Unicrypto.seed = {
+        pss: pssSeed,
+        oaep: oaepSeed,
+        keys: keysSeed,
+        customSalt: customSaltSeed
+      };
+    </script>
+
+  </head>
+  <body>
+    <div id="mocha"></div>
+
+    <script src="../hash.js"></script>
+    <script src="../pbkdf2.js"></script>
+    <script src="../aes.js"></script>
+    <script src="../boss.js"></script>
+    <script src="../rsa.js"></script>
+    <script src="../extended_signature.js"></script>
+    <script src="../signed_record.js"></script>
+    <script src="../tools.js"></script>
+    <script> mocha.run(); </script>
+  </body>
+</html>

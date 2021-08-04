@@ -2,8 +2,6 @@ var Minicrypto = Minicrypto || require('../index');
 var chai = chai || require('chai');
 var expect = chai.expect;
 
-var Module = Module || require('../src/vendor/wasm/wrapper');
-
 describe('Diffie-Hellman', function() {
   it('should create keys and same secrets', async () => {
     const { DiffieHellman } = Minicrypto;

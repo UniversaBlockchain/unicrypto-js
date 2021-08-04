@@ -1,8 +1,6 @@
-var Minicrypto = Minicrypto || require('../index');
+var Unicrypto = Unicrypto || require('../index');
 var chai = chai || require('chai');
 var expect = chai.expect;
-
-var Module = Module || require('../src/vendor/wasm/wrapper');
 
 describe('Tools', function() {
   const {
@@ -17,9 +15,9 @@ describe('Tools', function() {
     textToBytes,
     bytesToText,
     bytesToHex
-  } = Minicrypto;
+  } = Unicrypto;
 
-  const { randomByteString } = Minicrypto.bytes;
+  const { randomByteString } = Unicrypto.bytes;
 
   it.skip('should generate random bytes', () => {
     const bytes = randomBytes(16);

@@ -7,7 +7,7 @@ const SHA = require('../hash/sha');
 const { Buffer } = require('buffer');
 const AbstractKey = require('./abstract_key');
 const KeyAddress = require('./key_address');
-const WorkerFactory = require('../workers');
+const CryptoWorker = require('../workers');
 
 const FINGERPRINT_SHA512 = '07';
 
@@ -24,7 +24,8 @@ const {
   byteStringToArray,
   arrayToByteString,
   crc32,
-  isNode
+  isNode,
+  isWorker
 } = utils;
 
 const { wrapOptions, getMaxSalt, normalizeOptions, mapCall } = helpers;
@@ -62,13 +63,13 @@ module.exports = class PublicKey extends AbstractKey {
     if (typeof options.saltLength === 'number') saltLength = options.saltLength;
     if (options.salt) saltLength = options.salt.length;
 
-    if (!isNode()) {
-      const raw = this.raw;
-
-      return WorkerFactory.runTask('publicKey.verify', {
-        raw,
-        options: { saltLength, hashType, mgf1Type, data, salt: options.salt, signature }
-      });
+    if (!isNode() && !isWorker()) {
+      return CryptoWorker.run(`async (resolve, reject) => {
+        const { PublicKey } = this.Unicrypto;
+        const { packed, data, signature, options } = this.data;
+        const key = await PublicKey.unpack(packed);
+        resolve(await key.verify(data, signature, options));
+      }`, { data: { packed: await this.pack(), data, signature, options } });
     } else {
       const key = await this.load();
 
@@ -107,13 +108,13 @@ module.exports = class PublicKey extends AbstractKey {
     const self = this;
     const hashType = SHA.wasmType(oaepHash || 'sha1');
 
-    if (!isNode()) {
-      const raw = this.raw;
-
-      return WorkerFactory.runTask('publicKey.encrypt', {
-        raw,
-        options: { hashType, data, seed }
-      });
+    if (!isNode() && !isWorker()) {
+      return CryptoWorker.run(`async (resolve, reject) => {
+        const { PublicKey } = this.Unicrypto;
+        const { packed, data, options } = this.data;
+        const key = await PublicKey.unpack(packed);
+        resolve(await key.encrypt(data, options));
+      }`, { data: { packed: await this.pack(), data, options } });
     } else {
       const key = await this.load();
 

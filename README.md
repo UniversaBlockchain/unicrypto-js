@@ -42,13 +42,12 @@ npm install
 npm run build
 ```
 
-In folder `dist` there will be `unicrypto.min.js`, `crypto.js`, `crypto.wasm`. Also there will be \*.LICENSE files.
+In folder `dist` there will be `crypto.js`, `crypto.wasm`. Also there will be \*.LICENSE files.
 
 Copy files to your scripts folder and set them in order. Also, wait for initalization:
 
 ```html
 <script src="path/to/crypto.js"></script>
-<script src="path/to/unicrypto.min.js"></script>
 
 <script>
   async function main() {

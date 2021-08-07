@@ -63,6 +63,36 @@ Copy files to your scripts folder and set them in order. Also, wait for initaliz
 
 ## Usage
 
+### CryptoWorker
+You can run your code in a worker process, using a CryptoWorker:
+```js
+import { CryptoWorker } from 'unicrypto';
+
+const encryptedData; // Uint8Array
+const privateKey; // PrivateKey instance
+
+// Define code to run in a worker within a separate function
+function workerCode(resolve, reject) {
+  // Here's Unicrypto instance
+  const { PrivateKey } = this.Unicrypto;
+
+  // All data you want to pass is stored in this.data. It should be serializable,
+  // according to worker's data exchange requirements
+  const { packedKey, encryptedData, decryptOptions } = this.data;
+
+  // output data should be serializable
+  PrivateKey.unpack(packedKey)
+    .then(key => key.decrypt(encryptedData, decryptOptions))
+    .then(resolve);
+}
+
+// Pass your data as second parameter, all data should be serializable
+const decryptedData = await CryptoWorker.run(
+  workerCode,
+  { data: { packedKey: await privateKey.pack(), encryptedData, decryptOptions } }
+);
+```
+
 ### Signed record
 
 Pack data to signed record (Uint8Array) with key:

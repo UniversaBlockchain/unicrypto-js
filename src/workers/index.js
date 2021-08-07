@@ -18,6 +18,7 @@ class DynamicWorker {
       function sendResult(taskId, extra) {
         const basic = { type: 'result', taskId, workerId: WORKER_ID };
         const full = Object.assign(basic, extra);
+        self.data = null;
         postMessage(full);
       }
 
@@ -28,9 +29,8 @@ class DynamicWorker {
 
       onmessage = function(msg) {
         const { fn, data, taskId } = msg.data;
-
         const promiseString = 'new Promise('+fn+').then(taskResolve('+taskId+'), taskReject('+taskId+'))';
-        console.log('RUN EVAL', { Unicrypto, data }, promiseString);
+        self.data = data;
         evalInContext.call({ Unicrypto, data }, promiseString);
       };
 
@@ -51,7 +51,6 @@ class DynamicWorker {
   }
 
   runTask(task) {
-    console.log('run worker task', task);
     this.worker.postMessage({ taskId: task.id, fn: task.fn, data: task.data });
   }
   addListener(listener) { this.worker.onmessage = listener; }
@@ -78,7 +77,6 @@ class CryptoWorker {
     worker.addListener(onMessage);
 
     function onMessage(msg) {
-      console.log()
       const { type, value, err, workerId, taskId } = msg.data;
       if (type === 'state') self.workers[workerId].state = value;
       if (type === 'result') {
@@ -133,9 +131,12 @@ class CryptoWorker {
   run(fn, options = {}) {
     const self = this;
 
-    return new Promise((resolve, reject) => {
-      self.addTask(fn, options.data || {}, resolve, reject);
-    });
+    return new Promise((resolve, reject) => self.addTask(
+      typeof fn === 'string' ? fn : fn.toString(),
+      options.data || {},
+      resolve,
+      reject
+    ));
   }
 }
 

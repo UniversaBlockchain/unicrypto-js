@@ -727,7 +727,7 @@ function _init() {
   function isDataURI(filename) {
       return String.prototype.startsWith ? filename.startsWith(dataURIPrefix) : filename.indexOf(dataURIPrefix) === 0
   }
-  var wasmBinaryFile = "crypto.v1.7.0.wasm";
+  var wasmBinaryFile = "crypto.v1.7.1.wasm";
   if (!isDataURI(wasmBinaryFile)) {
       wasmBinaryFile = locateFile(wasmBinaryFile)
   }

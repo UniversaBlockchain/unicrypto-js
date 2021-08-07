@@ -10,7 +10,8 @@ describe('RSA', function() {
     bytesToHex: hex,
     hexToBytes,
     KeyAddress,
-    unicryptoReady
+    unicryptoReady,
+    CryptoWorker
   } = Unicrypto;
 
   const {
@@ -417,6 +418,35 @@ describe('RSA', function() {
 
       expect(hex(decrypted)).to.equal(hex(seedOAEP.originalMessage));
     });
+
+    it.skip('should run decrypt in a crypto worker', async () => {
+      var oaepOpts = { seed: seedOAEP.seed, oaepHash: 'sha1' };
+      var privateKey = await PrivateKey.unpack(seedOAEPExp);
+      const packedKey = await privateKey.pack();
+
+      console.log("got packedKey", packedKey);
+
+      // Define code to run in a worker within a separate function
+      function workerCode(resolve, reject) {
+        console.log(this.data);
+        // Here's Unicrypto instance
+        const { PrivateKey } = this.Unicrypto;
+
+        // All data you want to pass is stored in this.data. It should be serializable,
+        // according to worker's data exchange requirements
+        const { packedKey, data, options } = this.data;
+
+        PrivateKey.unpack(packedKey).then(key => key.decrypt(data, options)).then(resolve);
+      }
+
+      const decrypted = await CryptoWorker.run(workerCode, { data: {
+        packedKey,
+        data: seedOAEP.encryptedMessage,
+        options: oaepOpts
+      } });
+
+      expect(hex(decrypted)).to.equal(hex(seedOAEP.originalMessage));
+    }).timeout(10000);
 
     it('should encrypt with sha3 pss', async () => {
       var privateKey = await PrivateKey.unpack(seedOAEPExp);

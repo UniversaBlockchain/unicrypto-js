@@ -177,7 +177,7 @@ declare module 'unicrypto' {
   };
 
   export class CryptoWorker {
-    export function run(fn: string, options: any): Promise<any>;
+    export function run(fn: string | (resolve: any, reject: any) => void, options: any): Promise<any>;
   };
 
   export namespace Boss {

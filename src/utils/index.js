@@ -68,8 +68,10 @@ exports.encode64Short = base64.encode64Short;
 exports.decode64Short = base64.decode64Short;
 exports.encode58 = base58.encode;
 exports.decode58 = base58.decode;
-exports.isBrowser = () => typeof window !== 'undefined' && typeof window.document !== 'undefined';
-exports.isNode = () => Object.prototype.toString.call(typeof process !== 'undefined' ? process : 0) === '[object process]';
+exports.isBrowser = () => typeof window === "object";
+exports.isNode = () => typeof process === "object"
+  && typeof process.versions === "object"
+  && typeof process.versions.node === "string";
 exports.isWorker = () => typeof importScripts === "function";
 
 exports.concatBytes = function(a, b) {

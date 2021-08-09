@@ -15,6 +15,8 @@ class DynamicWorker {
 
       importScripts(LIB_SRC);
 
+      for (let key in Unicrypto) self[key] = Unicrypto[key];
+
       function sendResult(taskId, extra) {
         const basic = { type: 'result', taskId, workerId: WORKER_ID };
         const full = Object.assign(basic, extra);
@@ -28,8 +30,10 @@ class DynamicWorker {
       function evalInContext(fn) { eval(fn); }
 
       onmessage = function(msg) {
-        const { fn, data, taskId } = msg.data;
-        const promiseString = 'new Promise('+fn+').then(taskResolve('+taskId+'), taskReject('+taskId+'))';
+        const { fn, data, functions, taskId } = msg.data;
+        let declaration = '';
+        for (let k in functions) { declaration += 'self["'+k+'"] = ' + functions[k] + ';'; }
+        const promiseString = declaration + 'new Promise('+fn+').then(taskResolve('+taskId+'), taskReject('+taskId+'))';
         self.data = data;
         evalInContext.call({ Unicrypto, data }, promiseString);
       };
@@ -51,7 +55,18 @@ class DynamicWorker {
   }
 
   runTask(task) {
-    this.worker.postMessage({ taskId: task.id, fn: task.fn, data: task.data });
+    const functions = {};
+    const { options } = task;
+    for (let name in options.functions || {}) {
+      functions[name] = options.functions[name].toString();
+    }
+
+    this.worker.postMessage({
+      taskId: task.id,
+      fn: task.fn,
+      data: options.data,
+      functions
+    });
   }
   addListener(listener) { this.worker.onmessage = listener; }
 }
@@ -116,11 +131,11 @@ class CryptoWorker {
       this.createWorker(workersTotal + 1);
   }
 
-  addTask(fn, data, resolve, reject) {
+  addTask(fn, options, resolve, reject) {
     this.tasks.push({
       id: this.lastTaskId,
       fn,
-      data,
+      options,
       resolve,
       reject
     });
@@ -129,11 +144,14 @@ class CryptoWorker {
   }
 
   run(fn, options = {}) {
+    if (isNode() || isWorker())
+      throw new Error('Web worker is not available on this platform');
+
     const self = this;
 
     return new Promise((resolve, reject) => self.addTask(
       typeof fn === 'string' ? fn : fn.toString(),
-      options.data || {},
+      options,
       resolve,
       reject
     ));

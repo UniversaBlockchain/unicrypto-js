@@ -1,5 +1,4 @@
-declare module 'unicrypto' {
-  export function encode64(data: Uint8Array): string;
+export function encode64(data: Uint8Array): string;
   export function encode64Short(data: Uint8Array): string;
   export function decode64(encoded: string): Uint8Array;
   export function decode64Short(encoded: string): Uint8Array;
@@ -13,6 +12,9 @@ declare module 'unicrypto' {
   export function randomBytes(size: number): Uint8Array;
   export function crc32(data: Uint8Array): Uint8Array;
   export function shortId(): string;
+  export function isBrowser(): boolean;
+  export function isNode(): boolean;
+  export function isWorker(): boolean;
 
   export interface CreateKeysOpts {
     strength?: number
@@ -176,8 +178,10 @@ declare module 'unicrypto' {
     serializeToBOSS(): any
   };
 
-  export class CryptoWorker {
-    export function run(fn: string | (resolve: any, reject: any) => void, options: any): Promise<any>;
+  type WorkerFn = string | (resolve: any, reject: any) => void;
+
+  export namespace CryptoWorker {
+    export function run(fn: WorkerFn, options: any): Promise<any>;
   };
 
   export namespace Boss {
@@ -279,4 +283,4 @@ declare module 'unicrypto' {
   }
 
   let unicryptoReady: Promise<boolean>;
-}
+

@@ -15,6 +15,7 @@ export function encode64(data: Uint8Array): string;
   export function isBrowser(): boolean;
   export function isNode(): boolean;
   export function isWorker(): boolean;
+  export function isWorkerAvailable(): boolean;
 
   export interface CreateKeysOpts {
     strength?: number

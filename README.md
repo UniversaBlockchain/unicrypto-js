@@ -71,7 +71,7 @@ import { CryptoWorker } from 'unicrypto';
 const encryptedData; // Uint8Array
 const privateKey; // PrivateKey instance
 
-// Define code to run in a worker within a separate function
+// Define code to run in a worker within a separate function. async/await is not supported, but you can use pure Promise interface
 function workerCode(resolve, reject) {
   // Here's Unicrypto instance
   const { PrivateKey } = this.Unicrypto;
@@ -90,6 +90,44 @@ function workerCode(resolve, reject) {
 const decryptedData = await CryptoWorker.run(
   workerCode,
   { data: { packedKey: await privateKey.pack(), encryptedData, decryptOptions } }
+);
+```
+
+You can also pass context independent helper functions:
+```js
+import { CryptoWorker } from 'unicrypto';
+
+const encryptedData; // Uint8Array
+const privateKey; // PrivateKey instance
+
+// Helper function example. async/await is not supported, but you can use pure Promise interface
+function parseNumber(numberString) {
+  return parseFloat(numberString);
+}
+
+// Define code to run in a worker within a separate function. async/await is not supported, but you can use pure Promise interface
+function workerCode(resolve, reject) {
+  // Helper function is available in context
+  const { parseNumber } = this;
+
+  // All data you want to pass is stored in this.data. It should be serializable,
+  // according to worker's data exchange requirements
+  const { stringNumber } = this.data;
+
+  const number = parseNumber(stringNumber);
+
+  resolve(number);
+}
+
+// Pass helper functions as dictionary
+const decryptedData = await CryptoWorker.run(
+  workerCode,
+  {
+    data: { stringNumber: '12323.12' },
+    functions: {
+      parseNumber
+    }
+  }
 );
 ```
 

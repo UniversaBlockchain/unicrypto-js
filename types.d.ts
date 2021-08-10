@@ -178,10 +178,10 @@ export function encode64(data: Uint8Array): string;
     serializeToBOSS(): any
   };
 
-  type WorkerFn = string | (resolve: any, reject: any) => void;
+  type WorkerFn = (resolve: any, reject: any) => void;
 
   export namespace CryptoWorker {
-    export function run(fn: WorkerFn, options: any): Promise<any>;
+    export function run(fn: string | WorkerFn, options: any): Promise<any>;
   };
 
   export namespace Boss {

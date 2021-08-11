@@ -31,11 +31,20 @@ class DynamicWorker {
 
       onmessage = function(msg) {
         const { fn, data, functions, taskId } = msg.data;
-        let declaration = '';
-        for (let k in functions) { declaration += 'self["'+k+'"] = ' + functions[k] + ';'; }
-        const promiseString = declaration + 'new Promise('+fn+').then(taskResolve('+taskId+'), taskReject('+taskId+'))';
-        self.data = data;
-        evalInContext.call({ Unicrypto, data }, promiseString);
+        const currentReject = taskReject(taskId);
+        try {
+          let declaration = '';
+          for (let k in functions) {
+            let fnDec = functions[k];
+            if (fnDec.indexOf('function ') !== 0 && fnDec[0] !== '(') fnDec = 'function ' + fnDec;
+            declaration += 'self["'+k+'"] = ' + fnDec + ';';
+          }
+          const promiseString = declaration + 'new Promise('+fn+').then(taskResolve('+taskId+'), taskReject('+taskId+'))';
+          self.data = data;
+          if (data.__debug) console.log(promiseString);
+
+          evalInContext.call({ Unicrypto, data }, promiseString);
+        } catch(err) { currentReject(err) }
       };
 
       postMessage({

@@ -29,6 +29,7 @@ function _init() {
       if (Module["locateFile"]) {
           return Module["locateFile"](path, scriptDirectory)
       }
+      if (typeof WASM_ABSOLUTE !== 'undefined' && WASM_ABSOLUTE) return WASM_ABSOLUTE;
       return scriptDirectory + path
   }
   var read_, readAsync, readBinary, setWindowTitle;

@@ -29,6 +29,7 @@ function _init() {
       if (Module["locateFile"]) {
           return Module["locateFile"](path, scriptDirectory)
       }
+      if (typeof WASM_ABSOLUTE !== 'undefined' && WASM_ABSOLUTE) return WASM_ABSOLUTE;
       return scriptDirectory + path
   }
   var read_, readAsync, readBinary, setWindowTitle;
@@ -727,7 +728,7 @@ function _init() {
   function isDataURI(filename) {
       return String.prototype.startsWith ? filename.startsWith(dataURIPrefix) : filename.indexOf(dataURIPrefix) === 0
   }
-  var wasmBinaryFile = "crypto.v1.8.2.wasm";
+  var wasmBinaryFile = "crypto.v1.8.3.wasm";
   if (!isDataURI(wasmBinaryFile)) {
       wasmBinaryFile = locateFile(wasmBinaryFile)
   }

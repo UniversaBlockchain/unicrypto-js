@@ -3,7 +3,7 @@ const { version } = require('../../package.json');
 const { isNode, isWorker } = require('../utils');
 
 class DynamicWorker {
-  constructor(id, scriptURL) {
+  constructor(id, { scriptURL, libAbsolute = '', wasmAbsolute = '' }) {
     this.id = id;
     const scriptDirectory = path.dirname(scriptURL);
     const libURL = path.join(scriptDirectory, `crypto.v${version}.js`);
@@ -12,8 +12,11 @@ class DynamicWorker {
       var WORKER_ID = ${id};
       var SCRIPT_SRC="${scriptURL}";
       var LIB_SRC="${libURL}";
+      var LIB_ABSOLUTE="${libAbsolute}";
+      var WASM_ABSOLUTE="${wasmAbsolute}";
 
-      importScripts(LIB_SRC);
+      if (LIB_ABSOLUTE) importScripts(LIB_ABSOLUTE);
+      else importScripts(LIB_SRC);
 
       for (let key in Unicrypto) self[key] = Unicrypto[key];
 
@@ -30,18 +33,18 @@ class DynamicWorker {
       function evalInContext(fn) { eval(fn); }
 
       onmessage = function(msg) {
-        const { fn, data, functions, taskId } = msg.data;
+        const { fn, data, functions, taskId, debug } = msg.data;
         const currentReject = taskReject(taskId);
         try {
           let declaration = '';
           for (let k in functions) {
             let fnDec = functions[k];
-            if (fnDec.indexOf('function ') !== 0 && fnDec[0] !== '(') fnDec = 'function ' + fnDec;
+            if (fnDec.indexOf('function') !== 0 && fnDec[0] !== '(') fnDec = 'function ' + fnDec;
             declaration += 'self["'+k+'"] = ' + fnDec + ';';
           }
           const promiseString = declaration + 'new Promise('+fn+').then(taskResolve('+taskId+'), taskReject('+taskId+'))';
           self.data = data;
-          if (data.__debug) console.log(promiseString);
+          if (debug) console.log(promiseString);
 
           evalInContext.call({ Unicrypto, data }, promiseString);
         } catch(err) { currentReject(err) }
@@ -74,6 +77,7 @@ class DynamicWorker {
       taskId: task.id,
       fn: task.fn,
       data: options.data,
+      debug: options.debug,
       functions
     });
   }
@@ -90,14 +94,25 @@ class CryptoWorker {
     this.lastTaskId = 1;
     this.maxWorkers = navigator.hardwareConcurrency - 1;
     this.scriptSRC = typeof document !== 'undefined' && document.currentScript && document.currentScript.src || '';
+    this.wasmAbsolute = '';
+    this.libAbsolute = '';
 
     const self = this;
     setInterval(() => self.checkTasks(), 100);
   }
 
+  setup({ wasmAbsolute = '', libAbsolute = '' }) {
+    this.wasmAbsolute = wasmAbsolute;
+    this.libAbsolute = libAbsolute;
+  }
+
   createWorker(i) {
     const self = this;
-    const worker = new DynamicWorker(i, this.scriptSRC);
+    const worker = new DynamicWorker(i, {
+      scriptURL: self.scriptSRC,
+      wasmAbsolute: self.wasmAbsolute,
+      libAbsolute: self.libAbsolute
+    });
     worker.addListener(onMessage);
 
     function onMessage(msg) {

@@ -144,6 +144,11 @@ export function encode64(data: Uint8Array): string;
     typeMark?: number
   }
 
+  export interface CryptoWorkerSetup {
+    wasmAbsolute?: string,
+    libAbsolute?: string
+  }
+
   export class PublicKey {
     readonly shortAddress: KeyAddress;
     readonly longAddress: KeyAddress;
@@ -183,7 +188,7 @@ export function encode64(data: Uint8Array): string;
 
   export namespace CryptoWorker {
     export function run(fn: string | WorkerFn, options: any): Promise<any>;
-    export function setup({ wasmAbsolute?: string, libAbsolute?: string}): void;
+    export function setup(options: CryptoWorkerSetup): void;
   };
 
   export namespace Boss {

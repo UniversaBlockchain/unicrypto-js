@@ -203,7 +203,7 @@ module.exports = class PublicKey extends AbstractKey {
   static async unpackBOSS(options) {
     const self = this;
 
-    await Module.isReady;
+    await Module.init();
 
     return new Promise(resolve => {
       Module.PublicKeyImpl.initFromPackedBinary(options, resolve);
@@ -211,7 +211,7 @@ module.exports = class PublicKey extends AbstractKey {
   }
 
   static async unpackExponents(options) {
-    await Module.isReady;
+    await Module.init();
 
     const { e, n } = options;
 

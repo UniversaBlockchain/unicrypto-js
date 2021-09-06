@@ -16,6 +16,11 @@ export function encode64(data: Uint8Array): string;
   export function isNode(): boolean;
   export function isWorker(): boolean;
   export function isWorkerAvailable(): boolean;
+  export function setup(options: UnicryptoSetup): void;
+
+  export interface UnicryptoSetup {
+    libraryPath?: string
+  }
 
   export interface CreateKeysOpts {
     strength?: number
@@ -188,7 +193,7 @@ export function encode64(data: Uint8Array): string;
 
   export namespace CryptoWorker {
     export function run(fn: string | WorkerFn, options: any): Promise<any>;
-    export function setup(options: CryptoWorkerSetup): void;
+    export function setup(options: UnicryptoSetup): void;
   };
 
   export namespace Boss {

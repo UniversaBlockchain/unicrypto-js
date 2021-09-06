@@ -25,7 +25,7 @@ async function derive(hashStringType, options) {
   const self = this;
   const hashType = SHA.StringTypes[hashStringType];
 
-  await Module.isReady;
+  await Module.init();
 
   if (!isNode() && !isWorker()) {
     const CryptoWorker = require('../workers');

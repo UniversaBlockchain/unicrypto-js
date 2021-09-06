@@ -29,7 +29,14 @@ function _init() {
       if (Module["locateFile"]) {
           return Module["locateFile"](path, scriptDirectory)
       }
-      if (typeof WASM_ABSOLUTE !== 'undefined' && WASM_ABSOLUTE) return WASM_ABSOLUTE;
+
+      if (Module.libraryPath) {
+        if (Module.libraryPath[Module.libraryPath.length - 1] !== '/')
+          Module.libraryPath += '/';
+
+        return Module.libraryPath + path;
+      }
+
       return scriptDirectory + path
   }
   var read_, readAsync, readBinary, setWindowTitle;
@@ -728,7 +735,7 @@ function _init() {
   function isDataURI(filename) {
       return String.prototype.startsWith ? filename.startsWith(dataURIPrefix) : filename.indexOf(dataURIPrefix) === 0
   }
-  var wasmBinaryFile = "crypto.v1.8.4.wasm";
+  var wasmBinaryFile = "crypto.v1.8.5.wasm";
   if (!isDataURI(wasmBinaryFile)) {
       wasmBinaryFile = locateFile(wasmBinaryFile)
   }
@@ -6380,4 +6387,11 @@ function isReadyPromise(resolve) {
 }
 Module.isReady = new Promise(isReadyPromise);
 Module._init = _init;
+Module.init = () => {
+  if (Module.__initialized) return Module.isReady;
+  Module.__initialized = true;
+  Module._init();
+  return Module.isReady;
+};
+
 module.exports = Module;

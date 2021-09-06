@@ -16,7 +16,7 @@ class HMAC {
   async get(data) {
     const self = this;
 
-    await Module.isReady;
+    await Module.init();
 
     return new Promise((resolve, reject) => {
       Module.calcHmac(self.hashType, self.key, data, res => {

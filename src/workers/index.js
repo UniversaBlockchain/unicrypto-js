@@ -3,20 +3,19 @@ const { version } = require('../../package.json');
 const { isNode, isWorker } = require('../utils');
 
 class DynamicWorker {
-  constructor(id, { scriptURL, libAbsolute = '', wasmAbsolute = '' }) {
+  constructor(id, { scriptURL, libraryPath }) {
     this.id = id;
     const scriptDirectory = path.dirname(scriptURL);
-    const libURL = path.join(scriptDirectory, `crypto.v${version}.js`);
+    const scriptName = `crypto.v${version}.js`;
+    const scriptBase = libraryPath ? libraryPath : scriptDirectory;
+    const libURL = path.join(scriptBase, scriptName);
 
     const workerBody = `
       var WORKER_ID = ${id};
       var SCRIPT_SRC="${scriptURL}";
       var LIB_SRC="${libURL}";
-      var LIB_ABSOLUTE="${libAbsolute}";
-      var WASM_ABSOLUTE="${wasmAbsolute}";
 
-      if (LIB_ABSOLUTE) importScripts(LIB_ABSOLUTE);
-      else importScripts(LIB_SRC);
+      importScripts(LIB_SRC);
 
       for (let key in Unicrypto) self[key] = Unicrypto[key];
 
@@ -93,25 +92,22 @@ class CryptoWorker {
     this.processing = {};
     this.lastTaskId = 1;
     this.maxWorkers = navigator.hardwareConcurrency - 1;
-    this.scriptSRC = typeof document !== 'undefined' && document.currentScript && document.currentScript.src || '';
-    this.wasmAbsolute = '';
-    this.libAbsolute = '';
+    this.scriptURL = typeof document !== 'undefined' && document.currentScript && document.currentScript.src || '';
+    this.libraryPath = '';
 
     const self = this;
     setInterval(() => self.checkTasks(), 100);
   }
 
-  setup({ wasmAbsolute = '', libAbsolute = '' }) {
-    this.wasmAbsolute = wasmAbsolute;
-    this.libAbsolute = libAbsolute;
+  setup({ libraryPath = '' }) {
+    this.libraryPath = libraryPath;
   }
 
   createWorker(i) {
     const self = this;
     const worker = new DynamicWorker(i, {
-      scriptURL: self.scriptSRC,
-      wasmAbsolute: self.wasmAbsolute,
-      libAbsolute: self.libAbsolute
+      scriptURL: self.scriptURL,
+      libraryPath: self.libraryPath
     });
     worker.addListener(onMessage);
 

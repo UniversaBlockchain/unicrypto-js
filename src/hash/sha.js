@@ -125,7 +125,7 @@ class SHA {
   }
 
   static async hashId(data) {
-    await Module.isReady;
+    await Module.init();
 
     return new Promise(resolve => {
       Module.calcHashId(data, res => resolve(new Uint8Array(res)));
@@ -146,7 +146,7 @@ class SHA {
   async init(wasmType) {
     if (this.hash) return;
 
-    await Module.isReady;
+    await Module.init();
 
     if (!this.hash) this.hash = new Module.DigestImpl(this.wasmType);
   }

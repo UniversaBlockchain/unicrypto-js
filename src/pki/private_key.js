@@ -199,7 +199,7 @@ module.exports = class PrivateKey extends AbstractKey {
   }
 
   static async unpackBOSS(options, password) {
-    await Module.isReady;
+    await Module.init();
 
     return new Promise((resolve, reject) => {
       const passwd = options.password || password;
@@ -215,7 +215,7 @@ module.exports = class PrivateKey extends AbstractKey {
   }
 
   static async unpackExponents(options) {
-    await Module.isReady;
+    await Module.init();
 
     const { e, p, q } = options;
 
@@ -240,7 +240,7 @@ module.exports = class PrivateKey extends AbstractKey {
 
       return PrivateKey.unpack(packed);
     } else {
-      await Module.isReady;
+      await Module.init();
 
       const generator = new Promise(resolve => {
         Module.PrivateKeyImpl.generate(strength, resolve);

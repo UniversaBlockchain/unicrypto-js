@@ -2,6 +2,7 @@ var Module = typeof Module !== "undefined" ? Module : {};
 
 function _init() {
   if (Module._initialized) return;
+  Module._initialized = true;
 
   var moduleOverrides = {};
   var key;
@@ -735,7 +736,7 @@ function _init() {
   function isDataURI(filename) {
       return String.prototype.startsWith ? filename.startsWith(dataURIPrefix) : filename.indexOf(dataURIPrefix) === 0
   }
-  var wasmBinaryFile = "crypto.v1.8.5.wasm";
+  var wasmBinaryFile = "crypto.v1.8.6.wasm";
   if (!isDataURI(wasmBinaryFile)) {
       wasmBinaryFile = locateFile(wasmBinaryFile)
   }

@@ -1,3 +1,4 @@
+
 var Module = Module || require('../vendor/wasm/wrapper');
 
 const helpers = require('./helpers');
@@ -170,8 +171,15 @@ module.exports = class PublicKey extends AbstractKey {
     key.fingerprint(fp => self._fingerprint = new Uint8Array(fp));
 
     if (this.bitStrength > 1024) {
-      this.shortAddress58 = key.getShortAddress58();
-      this.longAddress58 = key.getLongAddress58();
+      let shortAddressBIN;
+      key.getShortAddressBin(fp => shortAddressBIN = new Uint8Array(fp));
+
+      let longAddressBIN;
+      key.getLongAddressBin(fp => longAddressBIN = new Uint8Array(fp));
+
+      this.shortAddress58 = encode58(shortAddressBIN);
+      this.longAddress58 = encode58(longAddressBIN);
+
       this.shortAddress = new KeyAddress(this.shortAddress58);
       this.longAddress = new KeyAddress(this.longAddress58);
     }

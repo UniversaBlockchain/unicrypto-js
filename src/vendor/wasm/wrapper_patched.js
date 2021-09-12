@@ -2,6 +2,7 @@ var Module = typeof Module !== "undefined" ? Module : {};
 
 function _init() {
   if (Module._initialized) return;
+  Module._initialized = true;
 
   var moduleOverrides = {};
   var key;

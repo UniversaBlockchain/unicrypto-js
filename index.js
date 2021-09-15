@@ -7,6 +7,7 @@ const utils = require('./src/utils');
 const cipher = require('./src/cipher');
 const Boss = require('./src/boss/protocol');
 const universa = require('./src/universa');
+const CryptoWorker = require('./src/workers');
 
 const exportObject = {
   get unicryptoReady() {
@@ -24,7 +25,7 @@ const exportObject = {
 };
 
 exportObject.Boss = Boss;
-exportObject.CryptoWorker = require('./src/workers');
+exportObject.CryptoWorker = CryptoWorker;
 
 for (var key in universa) { exportObject[key] = universa[key]; }
 for (var key in hash) { exportObject[key] = hash[key]; }
@@ -36,6 +37,8 @@ for (var key in dh) { exportObject[key] = dh[key]; }
 
 exportObject.setup = function({ libraryPath }) {
   Module.libraryPath = libraryPath;
+
+  CryptoWorker.setup({ libraryPath });
 };
 
 module.exports = exportObject;

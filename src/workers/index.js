@@ -7,8 +7,10 @@ class DynamicWorker {
     this.id = id;
     const scriptDirectory = path.dirname(scriptURL);
     const scriptName = `crypto.v${version}.js`;
-    const scriptBase = libraryPath ? libraryPath : scriptDirectory;
-    const libURL = path.join(scriptBase, scriptName);
+    let scriptBase = libraryPath ? libraryPath : scriptDirectory;
+    if (scriptBase && scriptBase[scriptBase.length - 1] !== '/') scriptBase += '/';
+
+    const libURL = scriptBase + scriptName;
 
     const workerBody = `
       var WORKER_ID = ${id};

@@ -26,7 +26,7 @@ function _init() {
   ENVIRONMENT_IS_SHELL = !ENVIRONMENT_IS_WEB && !ENVIRONMENT_IS_NODE && !ENVIRONMENT_IS_WORKER;
   var scriptDirectory = "";
 
-  if (LIBRARY_PATH && !Module.libraryPath) Module.libraryPath = LIBRARY_PATH;
+  if (typeof LIBRARY_PATH !== 'undefined' && !Module.libraryPath) Module.libraryPath = LIBRARY_PATH;
 
   function locateFile(path) {
       console.log('run locate file1111', Module.libraryPath, path);
@@ -742,7 +742,7 @@ function _init() {
   function isDataURI(filename) {
       return String.prototype.startsWith ? filename.startsWith(dataURIPrefix) : filename.indexOf(dataURIPrefix) === 0
   }
-  var wasmBinaryFile = "crypto.v1.8.8.wasm";
+  var wasmBinaryFile = "crypto.v1.8.9.wasm";
   if (!isDataURI(wasmBinaryFile)) {
       wasmBinaryFile = locateFile(wasmBinaryFile)
   }

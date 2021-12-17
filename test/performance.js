@@ -110,7 +110,8 @@ class BitMixer {
     }
 
     return CryptoWorker.run(exec, {
-      data: { source, length, __debug: true },
+      debug: true,
+      data: { source, length },
       functions: {
         countZeroes: BitMixer.countZeroes,
         SolvePOW1Blocking: BitMixer.SolvePOW1Blocking
@@ -164,7 +165,7 @@ function freezeWatcher(interval = 200) {
 }
 
 describe('Performance', function() {
-  it.only('should not freeze on worker task', async () => {
+  it('should not freeze on worker task', async () => {
     freezeWatcher();
 
     try {

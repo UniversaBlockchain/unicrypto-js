@@ -14,6 +14,8 @@ describe('PBKDF2', function() {
     var salt = decode64('KFuMDXmo');
     var standard = decode64('yPsu5qmQto99vDqAMWnldNuagfVl5OhPr6g=');
 
+    // Unicrypto.setup({ libraryPath: '/Users/anzhu/Documents/unicrypto/src/vendor/wasm/'});
+
     var dk = await pbkdf2('sha512', {
       password,
       salt,

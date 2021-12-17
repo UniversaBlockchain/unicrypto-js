@@ -11,7 +11,8 @@ describe('RSA', function() {
     hexToBytes,
     KeyAddress,
     unicryptoReady,
-    CryptoWorker
+    CryptoWorker,
+    Boss
   } = Unicrypto;
 
   const {
@@ -85,6 +86,26 @@ describe('RSA', function() {
       expect(key.publicKey.shortAddress.asString).to.equal(shortAddress);
       expect(key.publicKey.longAddress.asString).to.equal(longAddress);
     });
+
+    // it.only('shoul sdddd', async () => {
+    //   const cardData = {
+    //         card: {
+    //             number: 123,
+    //             validTrhu: '11/23',
+    //             holderName: 'TEST TESTOV',
+    //             CVC: '123',
+    //         },
+    //         extra: {
+    //             passwordFromDemo: '',
+    //         },
+    //     };
+
+    //   const pub64 =
+    //         'HggcAQABxAAByd0VmfkmlnQV7F2IzPmEPpL/v3pT8PkDW+eszQi/ED5nN3o66rdfhWEhm5Md8AORTDRtEkl/DpJljj8VhM3DElRhDyyZzzOazbf5lZm/dOWw35txdEPQFtlifmKyQQvLkMHY99wDWgC3SFf8xUffToneCXL727VksJZfhSov/krh3YwE2UxgeHkH4SMfI6qmbYTubgUtKbcg2OtRovFAlhqnisI8u96JLozaM/FAGX8iKJmahRAIWJiIQeTD7EFYPCx9xdbPsZzJFOGT7WN7mOP2s21TxFeoEJLV6/5uCJmfza2eR7BEo1i2yVERj2U62vhlIIhzRuAoYH4kSqopJw==';
+    //     const pub = await PublicKey.unpack(decode64(pub64));
+    //     const encrypted2 = await pub.encrypt(Boss.dump(cardData));
+    //     console.log('>>>>', encode64(encrypted2));
+    // });
 
     it('should not unpack private key without password parameter', async () => {
       const k1 = await PrivateKey.generate({strength: 2048});
@@ -562,7 +583,11 @@ describe('RSA', function() {
     });
 
     it('should pack to uint8array', async () => {
+      await unicryptoReady;
+
       const sk = new SymmetricKey();
+
+      console.log(sk.etaEncryptSync(decode64('abcd')));
       const packed = sk.pack();
 
       expect(packed instanceof Uint8Array).to.equal(true);

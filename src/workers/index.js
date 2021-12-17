@@ -14,6 +14,7 @@ class DynamicWorker {
       var WORKER_ID = ${id};
       var SCRIPT_SRC="${scriptURL}";
       var LIB_SRC="${libURL}";
+      var LIBRARY_PATH = "${libraryPath || ''}";
 
       importScripts(LIB_SRC);
 

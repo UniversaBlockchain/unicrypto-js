@@ -1,4 +1,5 @@
-export function encode64(data: Uint8Array): string;
+declare module "unicrypto" {
+  export function encode64(data: Uint8Array): string;
   export function encode64Short(data: Uint8Array): string;
   export function decode64(encoded: string): Uint8Array;
   export function decode64Short(encoded: string): Uint8Array;
@@ -295,4 +296,4 @@ export function encode64(data: Uint8Array): string;
   }
 
   let unicryptoReady: Promise<boolean>;
-
+}

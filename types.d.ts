@@ -214,6 +214,9 @@ declare module "unicrypto" {
       read(): any;
     }
 
+    export function createReader(stream: Uint8Array): Reader;
+    export function createWriter(): Writer;
+
     export function register<T extends BossSerializable>(alias: string, clz: BossDeserializable<T>): void;
     export function registerSerializer<T>(alias: string, clz: BossDeserializable<T>, serializer: (any) => T): void;
   }

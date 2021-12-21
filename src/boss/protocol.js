@@ -127,7 +127,9 @@ const Protocol = {
   Reader,
   register: (alias, bossSerializable) => {
     registry.register(alias, bossSerializable);
-  }
+  },
+  createReader: function(stream) { return new Reader(stream); },
+  createWriter: function(stream) { return new Writer(stream); }
 };
 
 module.exports = Protocol;

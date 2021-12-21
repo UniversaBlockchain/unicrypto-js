@@ -1,11 +1,10 @@
-const path = require('path');
 const { version } = require('../../package.json');
-const { isNode, isWorker } = require('../utils');
+const { isNode, isWorker, dirname } = require('../utils');
 
 class DynamicWorker {
   constructor(id, { scriptURL, libraryPath }) {
     this.id = id;
-    const scriptDirectory = path.dirname(scriptURL);
+    const scriptDirectory = dirname(scriptURL);
     const scriptName = `crypto.v${version}.js`;
     let scriptBase = libraryPath ? libraryPath : scriptDirectory;
     if (scriptBase && scriptBase[scriptBase.length - 1] !== '/') scriptBase += '/';

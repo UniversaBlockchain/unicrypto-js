@@ -5,7 +5,7 @@ const { version } = require('../package.json');
 const wrapperPath = __dirname + '/../src/vendor/wasm/wrapper_patched.js';
 var wrapperData = fs.readFileSync(wrapperPath);
 
-wrapperData = wrapperData.toString().replace('crypto.wasm',  `crypto.v${version}.wasm`);
+wrapperData = wrapperData.toString().replace('crypto.wasm',  `crypto.v${version}.wasm`).replace('%version%', version);
 fs.writeFileSync(__dirname + '/../src/vendor/wasm/wrapper.js', wrapperData);
 
 const modulePath = path.resolve(__dirname, "..", "src/vendor/wasm/crypto.wasm");

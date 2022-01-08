@@ -9,6 +9,8 @@ class DynamicWorker {
     let scriptBase = libraryPath ? libraryPath : scriptDirectory;
     if (scriptBase && scriptBase[scriptBase.length - 1] !== '/') scriptBase += '/';
 
+    const CDN_LINK = `https://cdn.jsdelivr.net/npm/unicrypto@${version}/dist/crypto.v${version}.js`;
+
     const libURL = scriptBase + scriptName;
 
     const workerBody = `
@@ -16,8 +18,13 @@ class DynamicWorker {
       var SCRIPT_SRC="${scriptURL}";
       var LIB_SRC="${libURL}";
       var LIBRARY_PATH = "${libraryPath || ''}";
+      var CDN_LINK = "${CDN_LINK}";
 
-      importScripts(LIB_SRC);
+      try {
+        importScripts(LIB_SRC);
+      } catch(err) {
+        importScripts(CDN_LINK);
+      }
 
       for (let key in Unicrypto) self[key] = Unicrypto[key];
 

@@ -25,6 +25,7 @@ function _init() {
   ENVIRONMENT_IS_NODE = typeof process === "object" && typeof process.versions === "object" && typeof process.versions.node === "string";
   ENVIRONMENT_IS_SHELL = !ENVIRONMENT_IS_WEB && !ENVIRONMENT_IS_NODE && !ENVIRONMENT_IS_WORKER;
   var scriptDirectory = "";
+  var PACKAGE_VERSION = "1.9.0";
 
   if (typeof LIBRARY_PATH !== 'undefined' && !Module.libraryPath) Module.libraryPath = LIBRARY_PATH;
 
@@ -740,7 +741,8 @@ function _init() {
   function isDataURI(filename) {
       return String.prototype.startsWith ? filename.startsWith(dataURIPrefix) : filename.indexOf(dataURIPrefix) === 0
   }
-  var wasmBinaryFile = "crypto.v1.8.13.wasm";
+  var wasmBinaryFile = "crypto.v1.9.0.wasm";
+  var wasmFileName = wasmBinaryFile;
   if (!isDataURI(wasmBinaryFile)) {
       wasmBinaryFile = locateFile(wasmBinaryFile)
   }
@@ -762,16 +764,21 @@ function _init() {
 
   function getBinaryPromise() {
       if (!wasmBinary && (ENVIRONMENT_IS_WEB || ENVIRONMENT_IS_WORKER) && typeof fetch === "function") {
-          return fetch(wasmBinaryFile, {
+        function tryToLoad(path) {
+          return new Promise((resolve, reject) => {
+            fetch(path, {
               credentials: "same-origin"
-          }).then(function(response) {
-              if (!response["ok"]) {
-                  throw "failed to load wasm binary file at '" + wasmBinaryFile + "'"
-              }
-              return response["arrayBuffer"]()
-          }).catch(function() {
-              return getBinary()
-          })
+            }).then(function(response) {
+                if (!response["ok"]) {
+                    throw "failed to load wasm binary file at '" + wasmBinaryFile + "'"
+                }
+                resolve(response["arrayBuffer"]())
+            }).catch(err => reject(err));
+          });
+        }
+
+        return tryToLoad(wasmBinaryFile).then().catch(() => tryToLoad(`https://cdn.jsdelivr.net/npm/unicrypto@${PACKAGE_VERSION}/dist/` + wasmFileName));
+
       }
       return new Promise(function(resolve, reject) {
           resolve(getBinary())

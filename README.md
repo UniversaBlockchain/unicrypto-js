@@ -389,6 +389,11 @@ PublicKey.isValidAddress(publicKey.shortAddress.bytes) // true
 // accepts string representation of address too
 PublicKey.isValidAddress(publicKey.shortAddress.string) // true
 
+// check address by public key
+publicKey.shortAddress.isMatchingKey(publicKey) // true
+
+// check address by private key
+publicKey.longAddress.isMatchingKey(privateKey) // true
 ```
 
 Generate private key

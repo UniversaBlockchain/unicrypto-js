@@ -777,7 +777,7 @@ function _init() {
           });
         }
 
-        return tryToLoad(wasmBinaryFile).then().catch(() => tryToLoad(`https://cdn.jsdelivr.net/npm/unicrypto@${PACKAGE_VERSION}/dist/` + wasmFileName));
+        return tryToLoad(wasmBinaryFile).catch(() => tryToLoad(`https://cdn.jsdelivr.net/npm/unicrypto@${PACKAGE_VERSION}/dist/` + wasmFileName));
 
       }
       return new Promise(function(resolve, reject) {

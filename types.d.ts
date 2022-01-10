@@ -66,6 +66,8 @@ declare module "unicrypto" {
 
     isValid: boolean;
     isLong: boolean;
+
+    isMatchingKey(key: PrivateKey | PublicKey): boolean;
   }
 
   export class SHA {

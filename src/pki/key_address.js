@@ -59,6 +59,14 @@ class KeyAddress {
   }
 
   serializeToBOSS() { return { uaddress: this.bytes }; }
+
+  isMatchingKey(key) {
+    const publicKey = key.publicKey || key;
+    const address58 = this.asString;
+
+    if (this.isLong) return address58 === publicKey.longAddress.asString;
+    return address58 === publicKey.shortAddress.asString;
+  }
 }
 
 KeyAddress.className = "KeyAddress";

@@ -135,6 +135,9 @@ declare module "unicrypto" {
 
     static unpack(packed: Uint8Array, password?: string): Promise<PrivateKey>;
     static unpack(options: PrivateKeyUnpackBOSS): Promise<PrivateKey>;
+
+    static unpackPlain(packed: Uint8Array): Promise<PrivateKey>;
+    static unpackWithPassword(packed: Uint8Array, password: string): Promise<PrivateKey>;
     static generate(options: CreateKeysOpts): Promise<PrivateKey>;
   }
 

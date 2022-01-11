@@ -176,6 +176,14 @@ module.exports = class PrivateKey extends AbstractKey {
     });
   }
 
+  static async unpackPlain(packed) {
+    return PrivateKey.unpackBOSS(packed);
+  }
+
+  static async unpackWithPassword(packed, password) {
+    return PrivateKey.unpackBOSS(packed, password);
+  }
+
   static async unpack(options, password) {
     let key = options.key;
 

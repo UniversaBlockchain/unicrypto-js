@@ -3,6 +3,7 @@ var Module = Module || require('../vendor/wasm/wrapper');
 const Boss = require('../boss/protocol');
 const utils = require('../utils');
 const helpers = require('./helpers');
+const { defaultSignatureConfig } = require('./rsa');
 const PublicKey = require('./public_key');
 const SHA = require('../hash/sha');
 const HMAC = require('../hash/hmac');
@@ -44,9 +45,9 @@ module.exports = class PrivateKey extends AbstractKey {
     // this.publicKey = PublicKey.fromPrivate(load, unload);
   }
 
-  async loadProperties(key) {
+  loadProperties(key) {
     const self = this;
-    this.publicKey = await PublicKey.fromPrivate(key);
+    this.publicKey = PublicKey.fromPrivate(key);
 
     this.n = this.publicKey.n;
     this.e = this.publicKey.e;
@@ -63,12 +64,29 @@ module.exports = class PrivateKey extends AbstractKey {
   getBitStrength() { return this.bitStrength; }
   get fingerprint() { return this._fingerprint; }
 
+  signSync(data, options = {}) {
+    if (!Module.isInitialized) throw new Error('unicrypto is not ready');
+
+    let result;
+    const self = this;
+    const { hashType, mgf1Type, saltLength } = defaultSignatureConfig(options);
+    const cb = res => result = new Uint8Array(res);
+    const key = new Module.PrivateKeyImpl(this.raw);
+
+
+    if (options.salt)
+      key.signWithCustomSalt(data, hashType, mgf1Type, options.salt, cb);
+    else
+      key.sign(data, hashType, mgf1Type, saltLength, cb);
+
+    self.unload(key);
+
+    return result;
+  }
+
   async sign(data, options = {}) {
     const self = this;
-    const hashType = SHA.wasmType(options.pssHash || 'sha1');
-    const mgf1Type = SHA.wasmType(options.mgf1Hash || 'sha1');
-    let saltLength = -1;
-    if (typeof options.saltLength === 'number') saltLength = options.saltLength;
+    const { hashType, mgf1Type, saltLength } = defaultSignatureConfig(options);
 
     if (!isNode() && !isWorker()) {
       return CryptoWorker.run(`async (resolve, reject) => {
@@ -121,6 +139,21 @@ module.exports = class PrivateKey extends AbstractKey {
     });
   }
 
+  decryptSync(data, options = {}) {
+    if (!Module.isInitialized) throw new Error('unicrypto is not ready');
+
+    const oaepHash = SHA.wasmType(options.oaepHash || 'sha1');
+    let result;
+    const cb = res => result = new Uint8Array(res);
+    const key = new Module.PrivateKeyImpl(this.raw);
+
+    key.decrypt(data, oaepHash, cb);
+
+    this.unload(key);
+
+    return result;
+  }
+
   async decrypt(data, options = {}) {
     const self = this;
     const oaepHash = SHA.wasmType(options.oaepHash || 'sha1');
@@ -142,6 +175,10 @@ module.exports = class PrivateKey extends AbstractKey {
         });
       });
     }
+  }
+
+  packSync() {
+    return this.raw;
   }
 
   async pack(options) {
@@ -199,7 +236,22 @@ module.exports = class PrivateKey extends AbstractKey {
     const unload = (key) => key.delete();
 
     const instance = new PrivateKey(load, unload, raw);
-    await instance.loadProperties(key);
+    instance.loadProperties(key);
+
+    unload(key);
+
+    return instance;
+  }
+
+  static unpackSync(packed) {
+    if (!Module.isInitialized) throw new Error('unicrypto is not ready');
+
+    const key = new Module.PrivateKeyImpl(packed);
+    const load = () => PrivateKey.unpackSync(packed);
+    const unload = (key) => key.delete();
+
+    const instance = new PrivateKey(load, unload, packed);
+    instance.loadProperties(key);
 
     unload(key);
 

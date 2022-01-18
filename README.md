@@ -343,6 +343,18 @@ const privateKey4 = await PrivateKey.unpack({
 });
 ```
 
+Sync usage (only without password)
+
+```js
+import { unicryptoReady, PrivateKey, decode64, BigInteger } from 'unicrypto';
+
+await unicryptoReady;
+
+const bossEncodedKey = decode64(keyPacked64);
+const privateKey2 = PrivateKey.unpackSync(bossEncodedKey);
+const repackedKey = privateKey2.packSync();
+```
+
 Public key unpack
 
 ```js
@@ -604,6 +616,29 @@ const decrypted = await privateKey.decrypt(encrypted, options);
 encode64(data) === encode64(decrypted); // true
 ```
 
+Sync usage
+
+```js
+import { unicryptoReady } from 'unicrypto';
+
+await unicryptoReady;
+
+const privateKey; // some PrivateKey instance
+const publicKey = privateKey.publicKey;
+
+// encrypt data
+const data = decode64("abc123");
+const options = {
+  seed: decode64("abcabc"), // optional, default none
+  mgf1Hash: 'sha512', // optional, default SHA(256)
+  oaepHash: 'sha512' // optional, default SHA(256)
+};
+const encrypted = await publicKey.encryptSync(data, options);
+const decrypted = await privateKey.decryptSync(encrypted, options);
+
+encode64(data) === encode64(decrypted); // true
+```
+
 OAEP max encryption message length
 
 ```js
@@ -659,6 +694,30 @@ const message = 'abc123';
 
 const signature = await privateKey.sign(message, options);
 const isCorrect = await publicKey.verify(message, signature, options);
+console.log(isCorrect); // true
+```
+
+Sync usage
+
+```js
+import { unicryptoReady } from 'unicrypto';
+
+await unicryptoReady;
+
+const privateKey; // some PrivateKey instance
+const publicKey = privateKey.publicKey;
+
+const options = {
+  salt: decode64("abcabc"), // optional
+  saltLength: null, // optional, numeric
+  mgf1Hash: 'sha512', // optional, default SHA(256)
+  pssHash: 'sha512' // optional, default SHA(256)
+};
+
+const message = 'abc123';
+
+const signature = privateKey.signSync(message, options);
+const isCorrect = publicKey.verifySync(message, signature, options);
 console.log(isCorrect); // true
 ```
 

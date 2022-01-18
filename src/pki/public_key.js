@@ -2,6 +2,7 @@
 var Module = Module || require('../vendor/wasm/wrapper');
 
 const helpers = require('./helpers');
+const { defaultSignatureConfig } = require('./rsa');
 const utils = require('../utils');
 const Boss = require('../boss/protocol');
 const SHA = require('../hash/sha');
@@ -58,11 +59,7 @@ module.exports = class PublicKey extends AbstractKey {
 
   async verify(data, signature, options) {
     const self = this;
-    const hashType = SHA.wasmType(options.pssHash || 'sha1');
-    const mgf1Type = SHA.wasmType(options.mgf1Hash || 'sha1');
-    let saltLength = -1;
-    if (typeof options.saltLength === 'number') saltLength = options.saltLength;
-    if (options.salt) saltLength = options.salt.length;
+    const { hashType, mgf1Type, saltLength } = defaultSignatureConfig(options);
 
     if (!isNode() && !isWorker()) {
       return CryptoWorker.run(`async (resolve, reject) => {
@@ -85,6 +82,21 @@ module.exports = class PublicKey extends AbstractKey {
     }
   }
 
+  verifySync(data, signature, options) {
+    if (!Module.isInitialized) throw new Error('unicrypto is not ready');
+
+    const self = this;
+    const { hashType, mgf1Type, saltLength } = defaultSignatureConfig(options);
+
+    let result;
+    const key = PublicKey.loadWASMInstance(this.packed);
+
+    key.verify(data, signature, hashType, mgf1Type, saltLength, r => result = r);
+    self.unload(key);
+
+    return result;
+  }
+
   async verifyExtended(signature, data) {
     const dataHash = new SHA('512');
     const unpacked = Boss.load(signature);
@@ -102,6 +114,23 @@ module.exports = class PublicKey extends AbstractKey {
       return { key, created_at };
 
     return null;
+  }
+
+  encryptSync(data, options = {}) {
+    if (!Module.isInitialized) throw new Error('unicrypto is not ready');
+
+    const { oaepHash, seed } = options;
+    const hashType = SHA.wasmType(oaepHash || 'sha1');
+    let result;
+    const cb = res => result = new Uint8Array(res);
+    const key = PublicKey.loadWASMInstance(this.packed);
+
+    if (seed) key.encryptWithSeed(data, hashType, seed, cb);
+    else key.encrypt(data, hashType, cb);
+
+    this.unload(key);
+
+    return result;
   }
 
   async encrypt(data, options = {}) {
@@ -139,14 +168,15 @@ module.exports = class PublicKey extends AbstractKey {
     return this._packed;
   }
 
-  async pack() {
+  pack() {
     return this._packed;
   }
 
-  static async packBOSS(key) {
-    return new Promise(resolve => {
-      key.pack(packed => resolve(new Uint8Array(packed)));
-    });
+  static packBOSS(key) {
+    let packed;
+    key.pack(bin => packed = new Uint8Array(bin));
+
+    return packed;
   }
 
   encryptionMaxLength(options) {
@@ -162,7 +192,7 @@ module.exports = class PublicKey extends AbstractKey {
   getE() { return this.e; }
   getBitStrength() { return this.bitStrength; }
 
-  async loadProperties(key, packed) {
+  loadProperties(key, packed) {
     const self = this;
 
     this.n = key.get_n();
@@ -185,7 +215,7 @@ module.exports = class PublicKey extends AbstractKey {
     }
 
     if (packed) this._packed = packed;
-    else this._packed = await PublicKey.packBOSS(key);
+    else this._packed = PublicKey.packBOSS(key);
   }
 
   static async unpack(options) {
@@ -194,18 +224,38 @@ module.exports = class PublicKey extends AbstractKey {
     if (options.n && options.e) key = await PublicKey.unpackExponents(options);
     else key = await PublicKey.unpackBOSS(options);
 
-    const packed = await PublicKey.packBOSS(key);
+    const packed = PublicKey.packBOSS(key);
 
     const load = () => PublicKey.unpackBOSS(options);
     const unload = (key) => key.delete();
 
     const instance = new PublicKey(load, unload, packed);
-    await instance.loadProperties(key, options);
+    instance.loadProperties(key, options);
 
     unload(key);
 
     return instance;
-    // return new PublicKey(await PublicKey.unpackBOSS(options));
+  }
+
+  static loadWASMInstance(packed) {
+    let key;
+    Module.PublicKeyImpl.initFromPackedBinary(packed, k => key = k);
+    return key;
+  }
+
+  static unpackSync(packed) {
+    if (!Module.isInitialized) throw new Error('unicrypto is not ready');
+
+    const key = PublicKey.loadWASMInstance(packed);
+    const load = () => PublicKey.unpackBOSS(packed);
+    const unload = (key) => key.delete();
+
+    const instance = new PublicKey(load, unload, packed);
+    instance.loadProperties(key, packed);
+
+    unload(key);
+
+    return instance;
   }
 
   static async unpackBOSS(options) {
@@ -213,9 +263,7 @@ module.exports = class PublicKey extends AbstractKey {
 
     await Module.init();
 
-    return new Promise(resolve => {
-      Module.PublicKeyImpl.initFromPackedBinary(options, resolve);
-    });
+    return PublicKey.loadWASMInstance(options);
   }
 
   static async unpackExponents(options) {
@@ -230,15 +278,15 @@ module.exports = class PublicKey extends AbstractKey {
     });
   }
 
-  static async fromPrivate(priv) {
+  static fromPrivate(priv) {
     const key = new Module.PublicKeyImpl(priv);
-    const packed = await PublicKey.packBOSS(key);
+    const packed = PublicKey.packBOSS(key);
 
     const load = () => PublicKey.unpackBOSS(packed);
     const unload = (key) => key.delete();
 
     const instance = new PublicKey(load, unload, packed);
-    await instance.loadProperties(key, packed);
+    instance.loadProperties(key, packed);
 
     unload(key);
 

@@ -55,7 +55,7 @@ describe('RSA', function() {
       for (let i = 0; i < 1000; i++) {
         const options = { strength: 2048 };
         const priv = await PrivateKey.generate(options);
-        console.log(i);
+
       }
     });
 
@@ -70,8 +70,6 @@ describe('RSA', function() {
 
       const packed = "JgAcAQABxAAC99KCimkzv77oDlxlFN8S4VER1S+v9N2hZUnZZr43/RLIbC+9W2t9bEor4iPNo8nowZ+q7OA9wXJmfpI3ocdadhYWOyLIsCIGScvgJufDCEMkYtIt/lJBgbpKLzWWohD10pFO3CiBG55zKcuy2wD3S1Yq7Ac9fMVMzg6hNpf2wvhoqwCpBY0kJTfBTW29eq7WcDaSUb2o2JPeq1uK0pUfUcvX2UcfGk0ABDRD8F7FZ/FVudCjOLW1gGU/5UTSgyp0gjMhPFEQWfLOGzkgj3wxOldfcof6IJVbQOXrJQbdOqwr2WQ0vsWrgZWTeKF/eLjxJvqgqnTcj1JPdJL3Fz9KkEa/Tu8AhSVCmJlxp24MRC08D3zSP7D6peOltEfIi0xdrqDVCH+TkeL7JV0Ro5K1D/GZAK94Cnq3xXAX20lJ8yZYExZuj8XYuP1wHAfcRxXTwW6R/qahgUjwMPB59zH03FlBLsohuzq6UBl7YKvcQibTXMyp7Es7Zcky9zpfEJxa+XXWYVnyycWr3oee2B/5A6YGKnqzXnRkwAhOi8/fofysva/4cbihIJ0D9yjj1C2weFx/h8ngevZjlkiVRAgpQHA/2j8PjDNibM4uXPFaLW80DXjMjr64peTsXG7dt/VFEn6CVIpUwLTDTf9JQWVQRo4jtvNm7BZz10zO2PP+q4nEAALuEsSqRqYVnMv7p8uym7uY2HJU+bX2TLEGg0NYp8Pv+JCd5jtjDcoysOfyv550cxBiTyECmvwgG//6P+fJNOy6+56TPVRzM3jP3DqXMMfbAeJpWgIPf8whB/y0IbY5rE3IvitRJRDwYTSeDgDSSwyua5UmG/woF9T5q/tMnEjWMs/1zl9oPxtLwA8Ewna+mOIHVo93H3B0tZyHQkOGBi3WGt+e6+ZGzBl1HXO74W5+qCPCWxxe7Hd0sEn2YzRfRWRcU0oVJrouafwfvOnLeOl3IkDlHAFlmcHgHEM8KsKx7zrim/CFZH2HRSeS/QmcMBiV9y2yO2JS6BdV4sRnYtwBEzkXByqGXW1sMsw+KWuNfOPOsOGgMXXxfdrLL0BBfgYjOtUvxOn0Gxw1kcWyyD0DWVeyTshnR21dwZq7qS6RdiBjzDKvDffmmaanSJcDRFHiuBlo+DTnIJgai8bcHOtJfd5BLUZm/lawDAnI+jGF0H/lMbz/1VH3FTrlCgxk5RrpwoxxwIuo2P5szpFEmP3MwnN2XPZesU4VovULFzWuvkf1a9QrxDwZrdskAjhQYXsFRVjI/9kPSVA2LwT1lFgq7nvLwhYC/pHkgtTzgLFP8RnZF3qnN6WAWPUN1utca7N2zKJxI+JtV639xEG28TNCyg4lwihyGTRAuKlg9P3tmw==";
       const key = await PrivateKey.unpack(decode64(packed));
-
-      console.log(pub.shortAddress);
 
       const isMatching = pub.shortAddress.isMatchingKey(pub);
       const isMatchingPrivate = pub.shortAddress.isMatchingKey(key);
@@ -99,6 +97,17 @@ describe('RSA', function() {
 
       try {
         const k2 = await PrivateKey.unpackPlain(packed);
+      } catch(err) {
+        expect.fail();
+      }
+    });
+
+    it('(SYNC) should unpack private key without password (unpackSync)', async () => {
+      const k1 = await PrivateKey.generate({strength: 2048});
+      const packed = k1.packSync();
+
+      try {
+        const k2 = PrivateKey.unpackSync(packed);
       } catch(err) {
         expect.fail();
       }
@@ -299,7 +308,6 @@ describe('RSA', function() {
     it.skip('should verify address', async () => {
       const pub = await PublicKey.unpack(seedPSSExp);
 
-      console.log(pub);
       // const pub = await PublicKey.unpack(decode64("HggMEbyAu/gvCQaCzpwjOKwrnahx9zaNB+7UEEOkQNa28HRU9R+437qvA1wCq2HqSM7rb81Idu1SDWDh7EYZcZ2KW4uAf6+44KPfxzdyPua0t9k6JYTuamSdBglTdIg0skVFmDlO4KqxLXthpR9SeppB9sFof+JTcpjKKo9ZRvjl/Qkdvcs="));
 
       const addressString = pub.longAddress58;
@@ -384,7 +392,7 @@ describe('RSA', function() {
     });
 
     describe('signature with custom salt', function() {
-      var privateKey, publicKey;
+      var privateKey, privateKeyBIN, publicKey;
 
       beforeEach(async () => {
 
@@ -393,6 +401,9 @@ describe('RSA', function() {
           p: seedCustomSalt.p.toString(16),
           q: seedCustomSalt.q.toString(16)
         });
+
+        privateKeyBIN = decode64('JgAcAQABxAABzSj/76kVC9Oo6bBBDkEZIO2FPHl+QQOOkyUSW7X+wyWOq6gW/McbqGokidqWXYJfwKPauzH1GQ7oDCoOenPJEi4Jm4oAwKgZ53ngsssHynGs+2IJ2NYH61jtMUUp7O0A3lWfMgG9M0amTBGcuSKQ1IalP3cIeiMuo/2zeUatjm3GSY2o3vxjwwI40mIrzVjzGG5uPSD5socv0yEnI21utLV/opfJgUsqOIH+KlOO2NRZ9/BPrdv/wUP24Cs31rZIs8nfUap/JCXkcP/hBdWDxQ0aLaLIn5E6OvkKca4vr6/5AOCe1EJfKhx1K35PDFSxVkCumt/Ryc/NdXF9RacTgcQAAf7zJ5RIYuMi9trkZJNUryi9Mtk4sK64olv5GG5uPSD5socv0yEnI21utLV/omwmZK+IWp4IMM8KSkth1ONlCz4N1FB/IfKUVHmZPWp9Z9lgAXpC2iXkcP8i/WME6AO8s2zx7HkboeTMCoiGPKbY4Xily6cbsJUE4t7P3tWoG7sB5DwC6ornlUhYZPkeNZH4ZMQ9p3pZk9ITurJM2flaJkj0y6ilZCPnuZm3L6SCT0vZXF1h9EMOIwtxRz7wzFMJJGVNDLjHH03bpQB865O4CkZuxUZl+f57nDgE1+vRPwdory0ozvpyQFRM0usYFfvUDfhk3MSti/SsBTg8VpYLF8c=');
+
         publicKey = privateKey.publicKey;
       });
 
@@ -437,6 +448,29 @@ describe('RSA', function() {
         signature = decode64("N4F/jKomkjHJQJELFddbQaeqITmIQv6rrIdZojE5XVdLuz+batkPzhFIz4vS6KMjRpn7RkMSXzhnVWOqHntl3TjTkOzYNO8C4pYNB+gwWCC0VxGdF/orgwHMT9waOrobNolaOyJi50lRX0ubsrqhbZ5VWtaWuaG8IO/F7G99KvnVUctZcA9v1ZtHEbS4Gj7baXXi0zxennTz/UOA2WtO8HLNIpRCGE7Euw/PMFHcosslc5CAM8hfMenZ3P/DFSvNcEdkN6wMKKPavoKmt3ERWiYdpT4a0ounUf0xY26wgecJTsbzaieWtnhdP5RqVTYHIoP/fvTfoJz2b8pCHNnELg");
 
         expect(await priv.publicKey.verify(msg, signature, {
+          pssHash: "sha3_384",
+          mgf1Hash: "sha1"
+        })).to.equal(true);
+      });
+
+      it('(SYNC) should pss sign with sha3', () => {
+        var signature = privateKey.signSync(seedCustomSalt.message, { pssHash: "sha3_384" });
+
+        expect(publicKey.verifySync(seedCustomSalt.message, signature, { pssHash: "sha3_384" })).to.equal(true);
+      });
+
+      it('(SYNC) should pss 384', () => {
+        var keyB = decode64("JgAcAQABvIDoaVg0PVAe9jcbthAtqajcFUNDI+hi4YVJbOGPSCmXBPLGhAYjDNNVJ2mvSxSED7Aa3nVu/M0NqmRrzOQZuXk7EBAjkDeP5xKJKes5O2okwvjU1Tysg2/xe5vkSKpsLVBMaZ38W2Vgq5gvyfhl87T9fJCaNVUw4ZvhiDvPJoGO9byA2nbKMXmYM/qM/p5tLI91NX0TofBCXgCHrccDHnOwN0ftx2qR3tE/0U4AFY4FTig2BBm4Loq8r0TSuF79gjJHKcmY0fAKmE4VBCSBOXDqbClJ4ywOK7BbJ53xX/MfVEI26cFVZySPXWoYu05+fzEta9tcViOY7ouqgys9f8biTT8");
+        var msg = hexToBytes("85e965a0");
+
+        var priv = PrivateKey.unpackSync(keyB);
+        var signature;
+        signature = priv.signSync(msg, {
+          pssHash: "sha3_384",
+          mgf1Hash: "sha1"
+        });
+
+        expect(priv.publicKey.verifySync(msg, signature, {
           pssHash: "sha3_384",
           mgf1Hash: "sha1"
         })).to.equal(true);
@@ -520,6 +554,22 @@ describe('RSA', function() {
 
       var encrypted = await publicKey.encrypt(seedOAEP.originalMessage, oaepOpts);
       var decrypted = await privateKey.decrypt(encrypted, oaepOpts);
+
+      expect(encode64(seedOAEP.originalMessage)).to.equal(encode64(decrypted));
+    });
+
+    it('(SYNC) should encrypt with sha3 pss', async () => {
+      var privateKey = await PrivateKey.unpack(seedOAEPExp);
+      var publicKey = privateKey.publicKey;
+
+      var oaepOpts = {
+        // seed: oaep.seed,
+        pssHash: "sha3_384",
+        mgf1Hash: 'sha1'
+      };
+
+      var encrypted = publicKey.encryptSync(seedOAEP.originalMessage, oaepOpts);
+      var decrypted = privateKey.decryptSync(encrypted, oaepOpts);
 
       expect(encode64(seedOAEP.originalMessage)).to.equal(encode64(decrypted));
     });
@@ -626,7 +676,6 @@ describe('RSA', function() {
 
       const sk = new SymmetricKey();
 
-      console.log(sk.etaEncryptSync(decode64('abcd')));
       const packed = sk.pack();
 
       expect(packed instanceof Uint8Array).to.equal(true);

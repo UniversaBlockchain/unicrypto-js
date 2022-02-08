@@ -86,16 +86,20 @@ module.exports = class PrivateKey extends AbstractKey {
 
   async sign(data, options = {}) {
     const self = this;
-    const { hashType, mgf1Type, saltLength } = defaultSignatureConfig(options);
 
     if (!isNode() && !isWorker()) {
+      const { pssHash, mgf1Hash, oaepHash, salt, saltLength, seed } = options;
+
       return CryptoWorker.run(`async (resolve, reject) => {
         const { PrivateKey } = this.Unicrypto;
         const { packed, data, options } = this.data;
         const key = await PrivateKey.unpack(packed);
         resolve(await key.sign(data, options));
-      }`, { data: { packed: await this.pack(), data, options } });
+      }`, { data: { packed: await this.pack(), data, options: {
+        pssHash, mgf1Hash, oaepHash, salt, saltLength, seed
+      } } });
     } else {
+      const { hashType, mgf1Type, saltLength } = defaultSignatureConfig(options);
       const key = await this.load();
 
       return new Promise(resolve => {
@@ -156,16 +160,20 @@ module.exports = class PrivateKey extends AbstractKey {
 
   async decrypt(data, options = {}) {
     const self = this;
-    const oaepHash = SHA.wasmType(options.oaepHash || 'sha1');
 
     if (!isNode() && !isWorker()) {
+      const { pssHash, mgf1Hash, oaepHash, salt, saltLength, seed } = options;
+
       return CryptoWorker.run(`async (resolve, reject) => {
         const { PrivateKey } = this.Unicrypto;
         const { packed, data, options } = this.data;
         const key = await PrivateKey.unpack(packed);
         resolve(await key.decrypt(data, options));
-      }`, { data: { packed: await this.pack(), data, options } });
+      }`, { data: { packed: await this.pack(), data, options: {
+        pssHash, mgf1Hash, oaepHash, salt, saltLength, seed
+      } } });
     } else {
+      const oaepHash = SHA.wasmType(options.oaepHash || 'sha1');
       const key = await this.load();
 
       return new Promise(resolve => {
@@ -296,7 +304,7 @@ module.exports = class PrivateKey extends AbstractKey {
         const key = await PrivateKey.generate(options);
         const packed = await key.pack();
         resolve(packed);
-      }`, { data: { options } });
+      }`, { data: { options: { strength } } });
 
       return PrivateKey.unpack(packed);
     } else {

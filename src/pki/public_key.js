@@ -59,16 +59,20 @@ module.exports = class PublicKey extends AbstractKey {
 
   async verify(data, signature, options) {
     const self = this;
-    const { hashType, mgf1Type, saltLength } = defaultSignatureConfig(options);
 
     if (!isNode() && !isWorker()) {
+      const { pssHash, mgf1Hash, oaepHash, salt, saltLength, seed } = options;
+
       return CryptoWorker.run(`async (resolve, reject) => {
         const { PublicKey } = this.Unicrypto;
         const { packed, data, signature, options } = this.data;
         const key = await PublicKey.unpack(packed);
         resolve(await key.verify(data, signature, options));
-      }`, { data: { packed: await this.pack(), data, signature, options } });
+      }`, { data: { packed: await this.pack(), data, signature, options: {
+        pssHash, mgf1Hash, oaepHash, salt, saltLength, seed
+      } } });
     } else {
+      const { hashType, mgf1Type, saltLength } = defaultSignatureConfig(options);
       const key = await this.load();
 
       return new Promise(resolve => {
@@ -134,18 +138,22 @@ module.exports = class PublicKey extends AbstractKey {
   }
 
   async encrypt(data, options = {}) {
-    const { oaepHash, seed } = options;
     const self = this;
-    const hashType = SHA.wasmType(oaepHash || 'sha1');
 
     if (!isNode() && !isWorker()) {
+      const { pssHash, mgf1Hash, oaepHash, salt, saltLength, seed } = options;
+
       return CryptoWorker.run(`async (resolve, reject) => {
         const { PublicKey } = this.Unicrypto;
         const { packed, data, options } = this.data;
         const key = await PublicKey.unpack(packed);
         resolve(await key.encrypt(data, options));
-      }`, { data: { packed: await this.pack(), data, options } });
+      }`, { data: { packed: await this.pack(), data, options: {
+        pssHash, mgf1Hash, oaepHash, salt, saltLength, seed
+      } } });
     } else {
+      const { oaepHash, seed } = options;
+      const hashType = SHA.wasmType(oaepHash || 'sha1');
       const key = await this.load();
 
       return new Promise(resolve => {

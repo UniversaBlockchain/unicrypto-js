@@ -29,12 +29,13 @@ async function derive(hashStringType, options) {
 
   if (!isNode() && !isWorker()) {
     const CryptoWorker = require('../workers');
+    const { password, salt, rounds, keyLength } = options;
 
     return CryptoWorker.run(`(resolve, reject) => {
       const { pbkdf2 } = this.Unicrypto;
       const { hashStringType, options } = this.data;
       pbkdf2(hashStringType, options).then(resolve, reject);
-    }`, { data: { hashStringType, options } });
+    }`, { data: { hashStringType, options: { password, salt, rounds, keyLength } } });
   } else return new Promise((resolve, reject) => {
     const { password, salt, keyLength, rounds } = options;
     const cb = (result) => resolve(new Uint8Array(result));

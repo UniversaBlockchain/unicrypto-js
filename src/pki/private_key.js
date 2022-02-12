@@ -222,11 +222,33 @@ module.exports = class PrivateKey extends AbstractKey {
   }
 
   static async unpackPlain(packed) {
-    return PrivateKey.unpackBOSS(packed);
+    const key = await PrivateKey.unpackBOSS(packed);
+
+    const raw = await PrivateKey.packBOSS({ key });
+    const load = () => PrivateKey.unpackBOSS(raw);
+    const unload = (key) => key.delete();
+
+    const instance = new PrivateKey(load, unload, raw);
+    instance.loadProperties(key);
+
+    unload(key);
+
+    return instance;
   }
 
   static async unpackWithPassword(packed, password) {
-    return PrivateKey.unpackBOSS(packed, password);
+    const key = await PrivateKey.unpackBOSS(packed, password);
+
+    const raw = await PrivateKey.packBOSS({ key });
+    const load = () => PrivateKey.unpackBOSS(raw);
+    const unload = (key) => key.delete();
+
+    const instance = new PrivateKey(load, unload, raw);
+    instance.loadProperties(key);
+
+    unload(key);
+
+    return instance;
   }
 
   static async unpack(options, password) {

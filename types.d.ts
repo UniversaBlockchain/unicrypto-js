@@ -50,6 +50,8 @@ declare module "unicrypto" {
 
     generateKeys(): string;
     computeSecret(publicKey: string): string;
+    setPublicKey(pub: string): void;
+    setPrivateKey(priv: string): void;
 
     static generate(primeLength: number, generator?: number): DiffieHellman;
   }

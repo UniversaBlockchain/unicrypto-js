@@ -11,14 +11,27 @@ class DiffieHellman {
 
     this.generator = this.dh.getGenerator('base64');
     this.prime = this.dh.getPrime('base64');
-    this.publicKey = null;
     this.secret = null;
   }
 
-  generateKeys() {
-    this.publicKey = this.dh.generateKeys('base64');
+  getPublicKey() {
+    return this.dh.getPublicKey('base64');
+  }
 
-    return this.publicKey;
+  getPrivateKey() {
+    return this.dh.getPrivateKey('base64');
+  }
+
+  setPrivateKey(priv, encoding = 'base64') {
+    this.dh.setPrivateKey(priv, encoding);
+  }
+
+  setPublicKey(pub, encoding = 'base64') {
+    this.dh.setPublicKey(pub, encoding);
+  }
+
+  generateKeys(encoding = 'base64') {
+    this.dh.generateKeys(encoding);
   }
 
   computeSecret(publicKey) {
@@ -27,8 +40,8 @@ class DiffieHellman {
     return this.secret;
   }
 
-  static generate(primeLength, generator = 2) {
-    const exchangeObject = dh.createDiffieHellman(primeLength, generator);
+  static generate(primeLength) {
+    const exchangeObject = dh.createDiffieHellman(primeLength);
 
     return new DiffieHellman(
       exchangeObject.getPrime('base64'),

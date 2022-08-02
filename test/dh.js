@@ -3,25 +3,21 @@ var chai = chai || require('chai');
 var expect = chai.expect;
 
 describe('Diffie-Hellman', function() {
-  it.only('should create keys and same secrets', async () => {
-    const { DiffieHellman } = Minicrypto;
+  it('should create keys and same secrets', async () => {
+    const { DiffieHellman, encode64 } = Minicrypto;
 
     const alice = DiffieHellman.generate(256);
     const alicePrime = alice.prime;
     const aliceGenerator = alice.generator;
     alice.generateKeys();
-
     const alicePublic = alice.getPublicKey();
-
     const bob = new DiffieHellman(alicePrime, aliceGenerator);
     bob.generateKeys();
     const bobPublic = bob.getPublicKey();
-
     const bobSecret = bob.computeSecret(alicePublic);
-
     const aliceSecret = alice.computeSecret(bobPublic);
-
-    expect(aliceSecret).to.be.equal(bobSecret);
+    
+    expect(encode64(aliceSecret)).to.be.equal(encode64(bobSecret));
   });
 
   // it.only('should work with java 2', async () => {

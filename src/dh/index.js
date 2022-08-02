@@ -4,48 +4,51 @@ const { encode64Short, decode64 } = require('../utils');
 
 const shortify = (base64String) => base64String.replace(/=/g, '');
 
+// 2
+const DEFAULT_GENERATOR = decode64('Ag');
 
 class DiffieHellman {
-  constructor(prime, generator = 'Ag') {
-    this.dh = dh.createDiffieHellman(prime, 'base64', generator, 'base64');
+  constructor(prime, generator = DEFAULT_GENERATOR) {
+    this.dh = dh.createDiffieHellman(prime, generator);
 
-    this.generator = this.dh.getGenerator('base64');
-    this.prime = this.dh.getPrime('base64');
+    this.generator = decode64(this.dh.getGenerator('base64'));
+    this.prime = decode64(this.dh.getPrime('base64'));
+
     this.secret = null;
   }
 
   getPublicKey() {
-    return this.dh.getPublicKey('base64');
+    return decode64(this.dh.getPublicKey('base64'));
   }
 
   getPrivateKey() {
-    return this.dh.getPrivateKey('base64');
+    return decode64(this.dh.getPrivateKey('base64'));
   }
 
-  setPrivateKey(priv, encoding = 'base64') {
+  setPrivateKey(priv, encoding) {
     this.dh.setPrivateKey(priv, encoding);
   }
 
-  setPublicKey(pub, encoding = 'base64') {
+  setPublicKey(pub, encoding) {
     this.dh.setPublicKey(pub, encoding);
   }
 
-  generateKeys(encoding = 'base64') {
-    this.dh.generateKeys(encoding);
+  generateKeys() {
+    this.dh.generateKeys();
   }
 
   computeSecret(publicKey) {
-    this.secret = this.dh.computeSecret(publicKey, 'base64', 'base64');
+    this.secret = decode64(this.dh.computeSecret(publicKey, 'binary', 'base64'));
 
     return this.secret;
   }
 
-  static generate(primeLength) {
-    const exchangeObject = dh.createDiffieHellman(primeLength);
+  static generate(primeLength, generator) {
+    const exchangeObject = dh.createDiffieHellman(primeLength, generator);
 
     return new DiffieHellman(
-      exchangeObject.getPrime('base64'),
-      exchangeObject.getGenerator('base64')
+      exchangeObject.getPrime(),
+      exchangeObject.getGenerator()
     );
   }
 }

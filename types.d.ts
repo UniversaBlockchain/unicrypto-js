@@ -41,17 +41,18 @@ declare module "unicrypto" {
   }
 
   export class DiffieHellman {
-    secret: string | null;
-    publicKey: string | null;
-    prime: string;
-    generator: string;
+    secret: Uint8Array | null;
+    prime: Uint8Array;
+    generator: Uint8Array;
 
-    constructor(prime: string, generator?: string);
+    constructor(prime: Uint8Array, generator?: Uint8Array);
 
-    generateKeys(): string;
-    computeSecret(publicKey: string): string;
-    setPublicKey(pub: string): void;
-    setPrivateKey(priv: string): void;
+    generateKeys(): void;
+    computeSecret(publicKey: Uint8Array): Uint8Array;
+    setPublicKey(pub: Uint8Array): void;
+    setPrivateKey(priv: Uint8Array): void;
+    getPublicKey(): Uint8Array;
+    getPrivateKey(): Uint8Array;
 
     static generate(primeLength: number, generator?: number): DiffieHellman;
   }

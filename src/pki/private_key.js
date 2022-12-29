@@ -277,7 +277,7 @@ module.exports = class PrivateKey extends AbstractKey {
     if (!Module.isInitialized) throw new Error('unicrypto is not ready');
 
     const key = new Module.PrivateKeyImpl(packed);
-    const load = () => PrivateKey.unpackSync(packed);
+    const load = () => PrivateKey.unpackBOSS(packed);
     const unload = (key) => key.delete();
 
     const instance = new PrivateKey(load, unload, packed);

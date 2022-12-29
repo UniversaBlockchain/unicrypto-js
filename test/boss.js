@@ -41,6 +41,15 @@ describe('BOSS Protocol', function() {
     decode64
   } = Unicrypto;
 
+  it.only('should unpack state.dates', function() {
+    const b64 = "H0NzdWJJdGVtcwZDY29udHJhY3TEFAMvI3NhbHRkbPHNJ8jpcnzQe3B7I2RhdGHE1AIfG25ldwZDcmV2b2tpbmcdQ2NvbnRyYWN0J0thcGlfbGV2ZWwgM19fdHlwZYNVbml2ZXJzYUNvbnRyYWN0U2RlZmluaXRpb24vI2RhdGEHU3JlZmVyZW5jZXMdW3Blcm1pc3Npb25zbVNjcmVhdGVkX2F0eRNFMx2GM2lzc3Vlci9LYWRkcmVzc2VzDhdFU0tleUFkZHJlc3NDdWFkZHJlc3O8NRAcfGMLY6uYXw9yJBMK+0shLD/ANBQRW5HXK9Gk9d2NOYUt3FXoA0Lkf+vCTNl4tWUIQldWI2tleXMdRVNTaW1wbGVSb2xlI25hbWWNO2Fub25JZHMdK3N0YXRlXytvd25lci+dDhdFtb0XvDUQujBP+1kdp5wfJqOQixuCY6vjZmNLc49Rm9pPloX2nh5Y8YZYshIJ3v0KOWg/s5KDrlV+cL0ZHUW9Gr0bvR+9HB0zcGFyZW50BVNleHBpcmVzX2F0eRMBFH2RZQ87cGF5bG9hZE9LY3JlYXRlZEF0eRNFMx2GK3RvdGFsGzUuMHNzdGF0ZVVwZGF0ZWRBdHkTRTMdhjN2ZW5kb3I3c25hbWVJc0FwcHJvdmVkaXNjYW5BcHByb3ZlTG9hbmlDY2FuQWRtaW5pvRsbYmFyO2lzRW1wdHlpE2lkECNndWlkc3BsTEp5QkhrU2dQMjNOS3Bvc2l0aW9ucxYfS3VuaXRQcmljZRsyLjBDcXVhbnRpdHkbMS4wvRtD0JzRi9C70L4fvTobMy4wvTy9Pb0bk9Cf0L7Qu9C+0YLQtdC90YbQtb0dACt0aXRsZQNDY3VzdG9tZXI3vS9pvTBpvTFpvRsbZm9vvTNpvTQIdR1LYnJhbmNoX2lkBTNvcmlnaW4FK3JvbGVzbYV5E0UzHYZTY3JlYXRlZF9ieR9bdGFyZ2V0X25hbWWNRUNSb2xlTGlua70bO2NyZWF0b3JDcmV2aXNpb24II3R5cGVTdW5pY2Fwc3VsZTt2ZXJzaW9uGFNzaWduYXR1cmVzBjNfX3R5cGV7VHJhbnNhY3Rpb25QYWNr\n";
+    const b = decode64(b64);
+    const decoded = Boss.load(b);
+    const d2 = Boss.load(decoded.contract);
+    const d3 = Boss.load(d2.data);
+    console.log(d3.contract.state.data);
+  });
+
   it('should ignore functions', function() {
     const hash = { a: 1, b: 2, c: function() {} };
     const decoded = Boss.load(Boss.dump(hash));
